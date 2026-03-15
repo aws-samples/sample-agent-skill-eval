@@ -321,7 +321,7 @@ def check_structure(skill_path: str | Path) -> tuple[list[Finding], Optional[dic
     # --- Check 6: metadata field type ---
     metadata = frontmatter.get("metadata")
     if metadata is not None and not isinstance(metadata, dict):
-        # Try to parse as inline JSON (common in some skill frameworks)
+        # Try to parse as inline JSON (common in OpenClaw skills)
         if isinstance(metadata, str):
             try:
                 import json
