@@ -1,119 +1,100 @@
-# Real Skill Audits: Interpreting Reports with Judgment
+# Real-World Skill Audits
 
-Not every finding means "do not install." This guide shows audit results for three real ClawHub skills and explains how to read the findings in context.
+Audit results from running `skill-eval audit` against publicly available Agent Skills.
+These demonstrate that the framework works on real, production-quality skills — not
+just our own test fixtures.
 
-## 1. Weather Skill — Score 92/100 (Grade A)
+## Anthropic Official Skills
 
-```bash
-$ skill-eval audit clawhub-skills/weather/
+Source: [github.com/anthropics/skills](https://github.com/anthropics/skills)
 
-══════════════════════════════════════════════════════════
-  Agent Skill Security Audit Report
-══════════════════════════════════════════════════════════
-  Skill:  weather
-  Path:   clawhub-skills/weather
-  Score:  92/100 (Grade: A)
-──────────────────────────────────────────────────────────
-  CRITICAL: 0 │ WARNING: 0 │ INFO: 4
-──────────────────────────────────────────────────────────
-  Result: PASSED (no critical findings)
-══════════════════════════════════════════════════════════
+Audited on 2026-03-15. All 17 skills scanned with default settings (scoped to
+SKILL.md + scripts/ + agents/).
 
-  [SEC-002] External URL: wttr.in
-     File: SKILL.md:4
-     URL: https://wttr.in/:help
+| Skill | Score | Grade | Critical | Warning | Info | Notes |
+|-------|-------|-------|----------|---------|------|-------|
+| algorithmic-art | 98 | A | 0 | 0 | 1 | Clean — 1 info only |
+| brand-guidelines | 100 | A | 0 | 0 | 0 | Perfect score |
+| canvas-design | 100 | A | 0 | 0 | 0 | Perfect score |
+| claude-api | 100 | A | 0 | 0 | 0 | Perfect score |
+| doc-coauthoring | 98 | A | 0 | 0 | 1 | Clean — 1 info only |
+| frontend-design | 100 | A | 0 | 0 | 0 | Perfect score |
+| internal-comms | 100 | A | 0 | 0 | 0 | Perfect score |
+| slack-gif-creator | 100 | A | 0 | 0 | 0 | Perfect score |
+| theme-factory | 100 | A | 0 | 0 | 0 | Perfect score |
+| skill-creator | 60 | D | 0 | 4 | 0 | Warnings from example code in SKILL.md |
+| webapp-testing | 76 | C | 0 | 2 | 2 | SEC-002 + SEC-004 from Playwright setup |
+| mcp-builder | 72 | C | 0 | 2 | 3 | npm install patterns |
+| pdf | 84 | B | 0 | 1 | 2 | Minor SEC-002 |
+| web-artifacts-builder | 38 | F | 0 | 6 | 1 | 5× SEC-004 (npm install), 1× SEC-002 |
+| docx | 0 | F | 0 | 34 | 23 | 34× SEC-002 (XML namespace URLs) |
+| pptx | 0 | F | 0 | 34 | 23 | Same as docx — XML namespaces |
+| xlsx | 0 | F | 0 | 34 | 23 | Same as docx — XML namespaces |
 
-  [SEC-002] External URL: api.open-meteo.com
-     File: SKILL.md:44
-     URL: https://api.open-meteo.com/v1/forecast?...
+### Distribution
 
-  [SEC-002] External URL: open-meteo.com
-     File: SKILL.md:49
-     URL: https://open-meteo.com/en/docs
-
-  [PERM-005] References absolute system path
-     File: SKILL.md:38
-     Line: curl -s "wttr.in/Berlin.png" -o /tmp/weather.png
+```
+A: 9 skills (53%)  — Clean, well-structured
+B: 1 skill  (6%)   — Minor issues
+C: 2 skills (12%)  — Moderate issues
+D: 1 skill  (6%)   — Significant issues
+F: 4 skills (24%)  — Critical or many issues
 ```
 
-**What the findings mean:** All four INFO findings are expected and harmless:
+### Key Insights
 
-- **SEC-002 (External URLs):** The weather skill *needs* to call `wttr.in` and `open-meteo.com` — that's its entire purpose. These are well-known public weather APIs with no authentication required. The `open-meteo.com/en/docs` link is just documentation.
-- **PERM-005 (Absolute path):** The `/tmp/` reference is a common temp directory for saving a weather PNG. This is a documentation example, not a security risk.
+**1. Most Anthropic skills score A — as expected.**
+9 out of 17 (53%) scored 100/A or 98/A. These are knowledge-only skills with no
+scripts, no external URLs, and clean SKILL.md files. They demonstrate what "good"
+looks like.
 
-**Verdict: Safe to install.** The 4 INFO findings are inherent to what the skill does. No action needed.
+**2. Document generation skills (docx/pptx/xlsx) score 0/F — but aren't actually dangerous.**
+These skills contain XML template code with dozens of `schemas.openxmlformats.org`
+and `schemas.microsoft.com` URLs. These are harmless XML namespace declarations, not
+data exfiltration. But the SEC-002 rule flags all external URLs.
 
----
+**This is the perfect use case for `.skilleval.yaml`:**
 
-## 2. Slack Skill — Score 100/100 (Grade A)
-
-```bash
-$ skill-eval audit clawhub-skills/slack/
-
-══════════════════════════════════════════════════════════
-  Agent Skill Security Audit Report
-══════════════════════════════════════════════════════════
-  Skill:  slack
-  Path:   clawhub-skills/slack
-  Score:  100/100 (Grade: A)
-──────────────────────────────────────────────────────────
-  CRITICAL: 0 │ WARNING: 0 │ INFO: 0
-──────────────────────────────────────────────────────────
-  Result: PASSED (no critical findings)
-══════════════════════════════════════════════════════════
+```yaml
+# .skilleval.yaml for document generation skills
+audit:
+  safe_domains:
+    - schemas.openxmlformats.org
+    - schemas.microsoft.com
+    - www.w3.org
+    - openoffice.org
 ```
 
-**What the findings mean:** Zero findings. The Slack skill is a pure SKILL.md with JSON action examples — no scripts, no external URLs, no elevated permissions. It delegates all Slack API calls to the Clawdbot `slack` tool, which handles authentication separately.
+With this config, docx/pptx/xlsx would score significantly higher.
 
-**Verdict: Safe to install.** Clean audit with no caveats.
+**3. skill-creator scores 60/D because it contains example code.**
+The skill-creator's SKILL.md contains examples of both good and bad skill code
+(as teaching material). The audit correctly flags the example `subprocess.run()`
+and `eval()` patterns — but these are in documentation, not executable code.
 
----
+**4. web-artifacts-builder scores 38/F due to 5 `npm install` warnings.**
+The skill instructs the agent to run `npm install` to set up React/Next.js projects.
+SEC-004 correctly flags these as supply chain risks. Whether this is acceptable
+depends on the skill's purpose — for a web builder, npm install is expected behavior.
 
-## 3. nano-pdf Skill — Score 100/100 (Grade A)
+### Takeaway
+
+The audit catches real issues (SEC-004 supply chain risks in web-artifacts-builder)
+while also revealing false positives on benign patterns (XML namespaces in docx).
+The `.skilleval.yaml` configuration feature exists precisely for this — teams can
+whitelist known-safe domains and adjust severity for their use case.
+
+## How to Reproduce
 
 ```bash
-$ skill-eval audit clawhub-skills/nano-pdf/
+# Clone Anthropic's skills repo
+git clone --depth 1 https://github.com/anthropics/skills.git /tmp/anthropic-skills
 
-══════════════════════════════════════════════════════════
-  Agent Skill Security Audit Report
-══════════════════════════════════════════════════════════
-  Skill:  nano-pdf
-  Path:   clawhub-skills/nano-pdf
-  Score:  100/100 (Grade: A)
-──────────────────────────────────────────────────────────
-  CRITICAL: 0 │ WARNING: 0 │ INFO: 0
-──────────────────────────────────────────────────────────
-  Result: PASSED (no critical findings)
-══════════════════════════════════════════════════════════
+# Audit all skills
+for skill in /tmp/anthropic-skills/skills/*/; do
+    skill-eval audit "$skill" --quiet
+done
+
+# Detailed audit for a specific skill
+skill-eval audit /tmp/anthropic-skills/skills/web-artifacts-builder/ --verbose
 ```
-
-**What the findings mean:** Another clean audit. The nano-pdf skill is minimal — it wraps the `nano-pdf` CLI binary with a usage example. No hardcoded secrets, no shell patterns, no external URLs beyond the pypi.org homepage (which is on the safe-domain allowlist).
-
-**Verdict: Safe to install.** The skill requires the `nano-pdf` binary to be installed separately, but that's a runtime dependency, not a security concern flagged by the audit.
-
----
-
-## How to Read Audit Reports
-
-### Decision framework
-
-| Scenario | Action |
-|----------|--------|
-| Score 90+, 0 criticals | Safe to install. Review INFO findings for context. |
-| Score 70-89, 0 criticals | Review WARNING findings. Most are acceptable with justification. |
-| Score 60-69 | Carefully review all findings. Some may need fixes. |
-| Score <60 or any criticals | Do not install without fixes. See [F to A guide](../f-to-a-improvement/). |
-
-### Common false positives
-
-- **SEC-002 on API skills:** A weather/translation/search skill *must* call external URLs. These are expected.
-- **PERM-005 on `/tmp/`:** Writing temp files to `/tmp/` is standard practice, not a security hole.
-- **STR-014 (long SKILL.md):** Some skills need detailed instructions. Length alone isn't a problem.
-
-### Real red flags to watch for
-
-- **SEC-001 (any severity):** Hardcoded secrets are never acceptable.
-- **SEC-004 (curl|bash):** Always a supply chain risk — no exceptions.
-- **SEC-009 with `npx -y`:** Auto-installing and running npm packages is dangerous.
-- **PERM-001 (Bash(\*)):** Unrestricted shell access should have a strong justification.
-- **SEC-008 + eval/exec:** Base64-encoded payloads executed at runtime are almost always malicious.
