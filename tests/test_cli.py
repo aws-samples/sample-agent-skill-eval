@@ -249,3 +249,31 @@ class TestExplainFlag:
         ret = main(["audit", str(FIXTURES / "bad-skill"), "--explain", "--verbose"])
         output = buf.getvalue()
         assert "Why it matters:" in output
+
+
+class TestIncludeAllFlag:
+    """Test --include-all flag for full directory scanning."""
+
+    def test_include_all_flag_accepted(self):
+        """--include-all should be accepted as a CLI argument."""
+        ret = main(["audit", str(FIXTURES / "good-skill"), "--include-all"])
+        assert ret == 0
+
+    def test_scoped_skill_default_no_criticals(self):
+        """Default scan of scoped-skill should find no criticals (tests/ excluded)."""
+        report = run_audit(str(FIXTURES / "scoped-skill"))
+        assert report.critical_count == 0, \
+            f"Default scan should have 0 criticals, got {report.critical_count}"
+
+    def test_scoped_skill_include_all_has_criticals(self):
+        """include_all scan of scoped-skill should find criticals from tests/."""
+        report = run_audit(str(FIXTURES / "scoped-skill"), include_all=True)
+        assert report.critical_count > 0, \
+            f"Full scan should have criticals from tests/, got {report.critical_count}"
+
+    def test_include_all_produces_lower_score(self):
+        """include_all should produce a lower score due to test fixture findings."""
+        default_report = run_audit(str(FIXTURES / "scoped-skill"))
+        full_report = run_audit(str(FIXTURES / "scoped-skill"), include_all=True)
+        assert full_report.score < default_report.score, \
+            f"Full scan score ({full_report.score}) should be lower than default ({default_report.score})"

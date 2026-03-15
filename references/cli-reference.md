@@ -21,7 +21,12 @@ skill-eval audit skill1/ skill2/ skill3/ --quiet
 
 # CI mode (fail on warnings)
 skill-eval audit /path/to/skill --fail-on-warning
+
+# Full directory scan (includes tests/, examples/, docs/, etc.)
+skill-eval audit /path/to/skill --include-all
 ```
+
+By default, audit scans only skill-standard directories (root files, `scripts/`, `agents/`). Use `--include-all` to scan the entire directory tree.
 
 Exit codes: `0` = passed, `1` = warnings (with `--fail-on-warning`), `2` = critical findings.
 

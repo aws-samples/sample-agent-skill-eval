@@ -80,6 +80,7 @@ def run_unified_report(
     dry_run: bool = False,
     timeout: int = 120,
     agent: str = "claude",
+    include_all: bool = False,
 ) -> int:
     """Run all applicable evaluations and produce a unified report.
 
@@ -93,6 +94,7 @@ def run_unified_report(
         dry_run: Validate inputs without executing agent calls.
         timeout: Timeout per agent invocation in seconds.
         agent: Name of the registered agent runner.
+        include_all: If True, audit scans entire directory tree.
 
     Returns:
         Exit code: 0 = passed, 1 = failed, 2 = error.
@@ -109,7 +111,7 @@ def run_unified_report(
     # ---- Audit ----
     if include_audit:
         try:
-            report = run_audit(str(path))
+            report = run_audit(str(path), include_all=include_all)
             audit_norm = report.score / 100.0
             sections["audit"] = {
                 "score": report.score,

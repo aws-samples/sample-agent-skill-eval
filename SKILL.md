@@ -20,6 +20,7 @@ skill-eval trigger /path/to/skill        # Reliability: activation precision
 
 - **"Is this skill safe?"** → `skill-eval audit <path>`
 - **"Full evaluation with grade"** → `skill-eval report <path>`
+- **"Full repo security review"** → `skill-eval audit <path> --include-all`
 - **"Write eval cases"** → `skill-eval init <path>`, then edit `evals/`
 - **"Compare two versions"** → `skill-eval compare <old> <new>`
 - **"Check for regressions"** → `skill-eval snapshot <path>`, then `skill-eval regression <path>`

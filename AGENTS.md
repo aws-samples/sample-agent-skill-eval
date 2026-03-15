@@ -93,6 +93,7 @@ Security and quality evaluation framework for Agent Skills. Python 3.10+, zero e
 - **AgentRunner ABC** (`agent_runner.py`) abstracts over CLI-based agents. `ClaudeRunner` is the default; new runners (e.g., for other agent CLIs) can be registered via `register_runner()` and used with `--agent`.
 - **Pareto classification** in functional evals classifies cost-efficiency tradeoffs — a skill can be high quality but expensive, or cheap but lower quality.
 - **Deterministic grading first** (`grading.py`) — uses contains/regex/JSON checks before falling back to LLM-based grading, keeping evals reproducible and fast.
+- **Scoped scanning by default** (`security_scan.py`) — audit only scans skill-standard directories (root files, `scripts/`, `agents/`) to avoid false positives from test fixtures and documentation. Use `--include-all` for full directory tree scanning.
 
 ### Entry Point
 

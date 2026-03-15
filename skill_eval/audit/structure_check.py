@@ -262,7 +262,7 @@ def check_structure(skill_path: str | Path) -> tuple[list[Finding], Optional[dic
         if name != dir_name:
             findings.append(Finding(
                 code="STR-008",
-                severity=Severity.WARNING,
+                severity=Severity.INFO,
                 category=Category.STRUCTURE,
                 title="Name doesn't match directory",
                 detail=f"Frontmatter name '{name}' doesn't match directory name '{dir_name}'.",

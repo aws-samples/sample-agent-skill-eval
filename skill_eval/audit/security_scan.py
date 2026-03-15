@@ -589,11 +589,95 @@ def _scan_skill_md_for_injection(skill_md: Path, content: str) -> list[Finding]:
     return findings
 
 
-def scan_security(skill_path: str | Path) -> list[Finding]:
-    """Run all security scans on a skill directory.
+# Directories that are part of an Agent Skill per the agentskills.io standard.
+# Used when include_all=False to scope scanning to skill content only.
+# We scan scripts/ and agents/ (executable code) but not references/ or assets/
+# (documentation/static content that may describe security patterns without
+# actually being vulnerable).
+SKILL_SCAN_DIRS = {"scripts", "agents"}
+
+
+def _iter_scan_files(
+    skill_path: Path,
+    include_all: bool = False,
+) -> list[Path]:
+    """Collect files to scan based on scope.
+    
+    When include_all is False (default), only scans:
+    - SKILL.md (the skill manifest — the only root file agents read)
+    - Executable skill directories: scripts/, agents/
+    
+    This excludes README.md, demo scripts, pyproject.toml, references/,
+    assets/, evals/, tests/, examples/, docs/, and other files that are
+    not part of the skill's executable content. Documentation and
+    development files may describe security anti-patterns without
+    actually being vulnerable.
+    
+    When include_all is True, scans the entire directory tree
+    (excluding build artifacts).
     
     Args:
         skill_path: Path to the skill directory
+        include_all: If True, scan entire directory tree
+        
+    Returns:
+        List of file paths to scan
+    """
+    # Directories to skip (build artifacts, environments, caches)
+    skip_dirs = {".git", ".venv", "venv", "node_modules", "__pycache__",
+                 ".pytest_cache", ".mypy_cache", ".ruff_cache",
+                 "egg-info", ".egg-info", "dist", "build", ".tox"}
+    
+    text_extensions = {".md", ".py", ".sh", ".js", ".ts", ".json", ".yaml", ".yml",
+                       ".toml", ".txt", ".bash", ".zsh", ".env", ".cfg", ".ini", ".conf"}
+    
+    files: list[Path] = []
+    
+    if include_all:
+        candidates = skill_path.rglob("*")
+    else:
+        # SKILL.md only at root + executable skill directories
+        candidates_list: list[Path] = []
+        skill_md = skill_path / "SKILL.md"
+        if skill_md.is_file():
+            candidates_list.append(skill_md)
+        for item in skill_path.iterdir():
+            if item.is_dir() and item.name in SKILL_SCAN_DIRS:
+                candidates_list.extend(item.rglob("*"))
+        candidates = iter(candidates_list)
+    
+    for file_path in candidates:
+        if not file_path.is_file():
+            continue
+        if any(skip in file_path.parts for skip in skip_dirs):
+            continue
+        if any(p.endswith(".egg-info") for p in file_path.parts):
+            continue
+        if file_path.name.startswith(".") and file_path.suffix != ".env":
+            continue
+        if file_path.suffix.lower() not in text_extensions and file_path.suffix != "":
+            continue
+        if file_path.stat().st_size > 1_000_000:  # Skip files > 1MB
+            continue
+        files.append(file_path)
+    
+    return files
+
+
+def scan_security(skill_path: str | Path, include_all: bool = False) -> list[Finding]:
+    """Run all security scans on a skill directory.
+    
+    By default, scans only skill-standard directories (SKILL.md, scripts/,
+    references/, assets/, evals/, agents/ and root-level files). This matches
+    the agentskills.io definition of skill content and avoids false positives
+    from test fixtures or development files.
+    
+    Use include_all=True to scan the entire directory tree.
+    
+    Args:
+        skill_path: Path to the skill directory
+        include_all: If True, scan entire directory tree instead of
+            just skill-standard directories
         
     Returns:
         List of security findings
@@ -604,32 +688,7 @@ def scan_security(skill_path: str | Path) -> list[Finding]:
     if not skill_path.is_dir():
         return findings
     
-    # Directories to skip (build artifacts, environments, caches)
-    skip_dirs = {".git", ".venv", "venv", "node_modules", "__pycache__",
-                 ".pytest_cache", ".mypy_cache", ".ruff_cache",
-                 "egg-info", ".egg-info", "dist", "build", ".tox"}
-    
-    # Scan all text files in the skill directory
-    text_extensions = {".md", ".py", ".sh", ".js", ".ts", ".json", ".yaml", ".yml", 
-                       ".toml", ".txt", ".bash", ".zsh", ".env", ".cfg", ".ini", ".conf"}
-    
-    for file_path in skill_path.rglob("*"):
-        if not file_path.is_file():
-            continue
-        # Skip ignored directories
-        if any(skip in file_path.parts for skip in skip_dirs):
-            continue
-        # Skip files that end with egg-info pattern
-        if any(p.endswith(".egg-info") for p in file_path.parts):
-            continue
-        if file_path.name.startswith(".") and file_path.suffix != ".env":
-            continue
-        # Skip binary files and very large files
-        if file_path.suffix.lower() not in text_extensions and file_path.suffix != "":
-            continue
-        if file_path.stat().st_size > 1_000_000:  # Skip files > 1MB
-            continue
-        
+    for file_path in _iter_scan_files(skill_path, include_all=include_all):
         try:
             content = file_path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, PermissionError):

@@ -448,3 +448,90 @@ class TestFullScan:
         npx_critical = [f for f in findings if f.code == "SEC-009"
                        and f.severity == Severity.CRITICAL and "npx" in f.title.lower()]
         assert len(npx_critical) > 0, "Should flag npx -y as CRITICAL in mcp-skill"
+
+
+class TestScopedScanning:
+    """Tests for scoped vs full directory scanning (include_all flag)."""
+
+    def test_default_scan_skips_tests_directory(self):
+        """Default scan should NOT find issues in tests/ directory."""
+        findings = scan_security(FIXTURES / "scoped-skill")
+        # tests/test_bad_patterns.py has secrets, subprocess, pickle, eval
+        # but should be excluded from default scan
+        test_file_findings = [f for f in findings
+                              if "tests/" in str(f.file_path)]
+        assert len(test_file_findings) == 0, \
+            f"Default scan should skip tests/ directory, but found {len(test_file_findings)} findings"
+
+    def test_default_scan_skips_references_directory(self):
+        """Default scan should NOT find issues in references/ directory."""
+        findings = scan_security(FIXTURES / "scoped-skill")
+        ref_findings = [f for f in findings
+                        if "references/" in str(f.file_path)]
+        assert len(ref_findings) == 0, \
+            f"Default scan should skip references/ directory, but found {len(ref_findings)} findings"
+
+    def test_default_scan_includes_scripts_directory(self):
+        """Default scan SHOULD include scripts/ directory."""
+        # Add a finding-producing file to scripts/ to test inclusion
+        # scripts/process.py is clean, so no findings expected from it
+        # but it should be in the scan scope
+        from skill_eval.audit.security_scan import _iter_scan_files
+        files = _iter_scan_files(FIXTURES / "scoped-skill", include_all=False)
+        script_files = [f for f in files if "scripts/" in str(f)]
+        assert len(script_files) > 0, "Default scan should include scripts/ directory"
+
+    def test_default_scan_includes_skill_md(self):
+        """Default scan SHOULD include SKILL.md at the root."""
+        from skill_eval.audit.security_scan import _iter_scan_files
+        files = _iter_scan_files(FIXTURES / "scoped-skill", include_all=False)
+        root_files = [f for f in files if f.parent == FIXTURES / "scoped-skill"]
+        assert len(root_files) == 1, "Default scan should include only SKILL.md at root"
+        assert root_files[0].name == "SKILL.md", "Root file should be SKILL.md"
+
+    def test_default_scan_excludes_root_non_skill_files(self):
+        """Default scan should NOT include root files other than SKILL.md."""
+        from skill_eval.audit.security_scan import _iter_scan_files
+        files = _iter_scan_files(FIXTURES / "scoped-skill", include_all=False)
+        non_skill_root = [f for f in files
+                          if f.parent == FIXTURES / "scoped-skill"
+                          and f.name != "SKILL.md"]
+        assert len(non_skill_root) == 0, \
+            f"Default scan should exclude non-SKILL.md root files, found: {[f.name for f in non_skill_root]}"
+
+    def test_include_all_finds_tests_directory(self):
+        """include_all=True should find issues in tests/ directory."""
+        findings = scan_security(FIXTURES / "scoped-skill", include_all=True)
+        test_file_findings = [f for f in findings
+                              if "tests/" in str(f.file_path)]
+        assert len(test_file_findings) > 0, \
+            f"Full scan should find issues in tests/ directory"
+
+    def test_include_all_finds_references_directory(self):
+        """include_all=True should find issues in references/ directory."""
+        findings = scan_security(FIXTURES / "scoped-skill", include_all=True)
+        ref_findings = [f for f in findings
+                        if "references/" in str(f.file_path)]
+        assert len(ref_findings) > 0, \
+            f"Full scan should find issues in references/ directory"
+
+    def test_include_all_finds_more_than_default(self):
+        """include_all=True should find strictly more findings than default."""
+        default_findings = scan_security(FIXTURES / "scoped-skill")
+        full_findings = scan_security(FIXTURES / "scoped-skill", include_all=True)
+        assert len(full_findings) > len(default_findings), \
+            f"Full scan ({len(full_findings)}) should find more than default ({len(default_findings)})"
+
+    def test_good_skill_unchanged_by_scope(self):
+        """good-skill has no tests/ dir — both modes should produce same results."""
+        default_findings = scan_security(FIXTURES / "good-skill")
+        full_findings = scan_security(FIXTURES / "good-skill", include_all=True)
+        assert len(default_findings) == len(full_findings), \
+            "good-skill should have identical results regardless of scan scope"
+
+    def test_bad_skill_unchanged_by_scope(self):
+        """bad-skill has scripts/ and SKILL.md only — both in default scope."""
+        default_findings = scan_security(FIXTURES / "bad-skill")
+        full_findings = scan_security(FIXTURES / "bad-skill", include_all=True)
+        assert len(default_findings) == len(full_findings), \
+            "bad-skill should have identical results regardless of scan scope"

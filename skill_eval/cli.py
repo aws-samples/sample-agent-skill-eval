@@ -18,6 +18,7 @@ def run_audit(
     verbose: bool = False,
     ignore_codes: set[str] | None = None,
     extra_safe_domains: set[str] | None = None,
+    include_all: bool = False,
 ) -> AuditReport:
     """Run a full security audit on a skill directory.
 
@@ -26,6 +27,8 @@ def run_audit(
         verbose: Include INFO-level findings in output
         ignore_codes: Set of finding codes to suppress (e.g., {"STR-017", "SEC-002"})
         extra_safe_domains: Additional domains to treat as safe
+        include_all: If True, scan entire directory tree instead of
+            just skill-standard directories (SKILL.md, scripts/, references/, etc.)
 
     Returns:
         AuditReport with all findings
@@ -49,7 +52,7 @@ def run_audit(
         all_findings.extend(structure_findings)
 
         # 2. Security scan
-        security_findings = scan_security(path)
+        security_findings = scan_security(path, include_all=include_all)
         all_findings.extend(security_findings)
 
         # 3. Permission analysis
@@ -111,6 +114,8 @@ def main(argv: list[str] | None = None) -> int:
                               help="One-line summary only")
     audit_parser.add_argument("--explain", action="store_true",
                               help="Show educational context for each finding")
+    audit_parser.add_argument("--include-all", action="store_true",
+                              help="Scan entire directory tree instead of just skill-standard directories")
 
     # init command
     init_parser = subparsers.add_parser("init",
@@ -188,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
                                 help="Timeout per agent invocation in seconds (default: 120)")
     report_parser.add_argument("--agent", type=str, default="claude",
                                 help="Agent runner to use (default: claude)")
+    report_parser.add_argument("--include-all", action="store_true",
+                                help="Audit scans entire directory tree instead of just skill-standard directories")
 
     # compare command
     compare_parser = subparsers.add_parser("compare",
@@ -238,7 +245,8 @@ def main(argv: list[str] | None = None) -> int:
 
         for skill_path in args.skill_path:
             report = run_audit(skill_path, verbose=args.verbose,
-                               ignore_codes=ignore_codes, extra_safe_domains=extra_domains)
+                               ignore_codes=ignore_codes, extra_safe_domains=extra_domains,
+                               include_all=args.include_all)
             reports.append(report)
 
             if args.quiet:
@@ -307,6 +315,7 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
             timeout=args.timeout,
             agent=args.agent,
+            include_all=args.include_all,
         )
 
     elif args.command == "compare":

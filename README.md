@@ -90,21 +90,46 @@ Grades: A (90+), B (80+), C (70+), D (60+), F (<60).
 
 Unified report weights: audit 40%, functional 40%, trigger 20%.
 
-## The Self-Eval Easter Egg
+## Scan Scope
 
-Running `skill-eval` on itself produces Grade F (60 criticals!) because our test fixtures intentionally contain every security anti-pattern we detect — secrets, `pickle.load`, `curl|bash`, `npx -y`. That's by design: you need bad examples to test a security scanner.
+By default, `skill-eval audit` only scans **skill-standard directories**: root-level files (SKILL.md, etc.), `scripts/`, and `agents/`. This matches the [agentskills.io](https://agentskills.io) definition of what constitutes a skill's content.
+
+Directories like `tests/`, `examples/`, `references/`, and `docs/` are excluded because they may contain documentation or test fixtures that *describe* security anti-patterns without actually being vulnerable.
+
+Use `--include-all` to scan the entire directory tree:
 
 ```bash
-skill-eval audit .
-# Score: 0/100 (Grade: F) — 60 criticals from test fixtures
-# This proves the scanner works!
+# Default: scan skill content only
+skill-eval audit /path/to/skill
+
+# Full: scan everything (useful for full repo security review)
+skill-eval audit /path/to/skill --include-all
 ```
+
+### Self-Eval: Why This Matters
+
+Running `skill-eval` on itself demonstrates the difference:
+
+```bash
+# Default scan — only skill content (SKILL.md, scripts/)
+skill-eval audit .
+# Score: 96/100 (Grade: A) — 0 criticals, 0 warnings, 2 infos
+# Infos: name/directory mismatch (dual-identity project) + README alongside SKILL.md
+
+# Full scan — includes test fixtures with intentional anti-patterns
+skill-eval audit . --include-all
+# Score: 0/100 (Grade: F) — 60+ criticals from tests/fixtures/
+# That's by design: you need bad examples to test a security scanner
+```
+
+The default scan correctly evaluates the skill itself. The `--include-all` scan catches everything including test fixtures — useful for full repo audits, but not representative of skill quality.
 
 ## Examples
 
 | Example | What you'll learn |
 |---------|-------------------|
 | [Data Analysis](examples/data-analysis/) | Full lifecycle walkthrough — init, audit, functional, trigger, report |
+| [Self-Eval](examples/self-eval/) | Default vs `--include-all` scan scope on this repo |
 | [F to A Improvement](examples/f-to-a-improvement/) | Fix a failing skill step by step |
 | [Real Skill Audits](examples/real-skill-audits/) | Interpret audit reports for production skills |
 | [Golden Eval Templates](examples/golden-evals/) | Write effective eval cases and trigger queries |
@@ -144,10 +169,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and PR wo
 - [OWASP Top 10 for LLMs](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [ClawHub](https://clawhub.com) — Agent Skills marketplace
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+MIT-0
