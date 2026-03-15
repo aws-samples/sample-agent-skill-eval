@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from skill_eval.cost import estimate_eval_cost, format_cost
 from skill_eval.eval_schemas import (
     EvalCase, AssertionResult, GradingResult, RunPairResult, BenchmarkReport,
 )
@@ -421,6 +422,17 @@ def _aggregate_benchmark(
             "description": ce["description"],
         }
 
+    # Estimated dollar cost
+    cost_estimate = estimate_eval_cost(
+        with_input=_mean(with_input_tokens),
+        with_output=_mean(with_output_tokens),
+        without_input=_mean(without_input_tokens),
+        without_output=_mean(without_output_tokens),
+        num_evals=len(eval_cases),
+        runs_per_eval=runs_per_eval,
+    )
+    run_summary["estimated_cost"] = cost_estimate
+
     scores = {
         "outcome": round(outcome_score, 4),
         "process": round(process_score, 4),
@@ -542,6 +554,19 @@ def _print_functional_report(report: BenchmarkReport) -> None:
         print(f"    Quality delta:  {qd_sign}{qd:.2f}")
         print(f"    Cost delta:     {cd_sign}{cd:.1f}%")
         print(f"    \u2192 {ce['description']}")
+        print(f"{'─' * w}")
+
+    # Estimated Cost section
+    ec = rs.get("estimated_cost")
+    if ec and ec.get("total_cost", 0) > 0:
+        print(f"  Estimated Cost (based on {ec.get('model', 'sonnet')} pricing):")
+        print(f"    Total:         {format_cost(ec['total_cost'])}")
+        wc = ec.get("with_skill_per_run", {})
+        woc = ec.get("without_skill_per_run", {})
+        if wc and woc:
+            print(f"    With skill:    {format_cost(wc['total_cost'])} per run")
+            print(f"    Without skill: {format_cost(woc['total_cost'])} per run")
+        print(f"    Runs:          {ec.get('total_runs', 0)} ({report.eval_count} evals \u00d7 {report.runs_per_eval} runs \u00d7 2)")
         print(f"{'─' * w}")
 
     scores = report.scores

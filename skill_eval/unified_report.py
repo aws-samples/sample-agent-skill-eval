@@ -143,6 +143,8 @@ def run_unified_report(
                 }
                 if "cost_efficiency" in func_result:
                     func_section["cost_efficiency"] = func_result["cost_efficiency"]
+                if "estimated_cost" in func_result:
+                    func_section["estimated_cost"] = func_result["estimated_cost"]
                 sections["functional"] = func_section
                 if not func_result["passed"]:
                     overall_passed = False
@@ -260,6 +262,9 @@ def _run_functional(
         ce = data.get("run_summary", {}).get("cost_efficiency")
         if ce:
             result["cost_efficiency"] = ce
+        ec = data.get("run_summary", {}).get("estimated_cost")
+        if ec:
+            result["estimated_cost"] = ec
         return result
     return None
 
@@ -336,6 +341,10 @@ def _print_text_report(data: dict) -> None:
             qd_sign = "+" if qd >= 0 else ""
             cd_sign = "+" if cd >= 0 else ""
             print(f"  Cost:       {ce['emoji']} {ce['classification']} (quality {qd_sign}{qd:.2f}, cost {cd_sign}{cd:.1f}%)")
+        ec = func.get("estimated_cost")
+        if ec and ec.get("total_cost", 0) > 0:
+            from skill_eval.cost import format_cost
+            print(f"  Est. cost:  {format_cost(ec['total_cost'])} (functional, {ec.get('model', 'sonnet')} pricing)")
 
     # Trigger
     trigger = sections.get("trigger", {})

@@ -10,6 +10,7 @@ from skill_eval.schemas import AuditReport, Finding, calculate_score, calculate_
 from skill_eval.audit.structure_check import check_structure
 from skill_eval.audit.security_scan import scan_security, SAFE_DOMAINS
 from skill_eval.audit.permission_analyzer import analyze_permissions
+from skill_eval.config import load_config, apply_config, AuditConfig
 from skill_eval.report import format_text_report, format_json_report
 
 
@@ -35,13 +36,25 @@ def run_audit(
     """
     path = Path(skill_path).resolve()
 
+    # Load .skilleval.yaml configuration
+    config = load_config(path)
+
+    # Merge config safe_domains with CLI-provided ones
+    all_safe_domains = set(config.safe_domains)
+    if extra_safe_domains:
+        all_safe_domains.update(extra_safe_domains)
+
+    # Merge config ignore with CLI-provided ones
+    all_ignore = set(config.ignore)
+    if ignore_codes:
+        all_ignore.update(ignore_codes)
+
     # Temporarily extend safe domains if provided
     added_domains: set[str] = set()
-    if extra_safe_domains:
-        for d in extra_safe_domains:
-            if d not in SAFE_DOMAINS:
-                SAFE_DOMAINS.add(d)
-                added_domains.add(d)
+    for d in all_safe_domains:
+        if d not in SAFE_DOMAINS:
+            SAFE_DOMAINS.add(d)
+            added_domains.add(d)
 
     try:
         all_findings: list[Finding] = []
@@ -59,9 +72,12 @@ def run_audit(
         permission_findings = analyze_permissions(path, frontmatter=frontmatter)
         all_findings.extend(permission_findings)
 
-        # Filter out ignored codes
-        if ignore_codes:
-            all_findings = [f for f in all_findings if f.code not in ignore_codes]
+        # Apply .skilleval.yaml config (ignore codes, severity overrides)
+        all_findings = apply_config(all_findings, config)
+
+        # Filter out CLI-provided ignored codes (on top of config)
+        if all_ignore:
+            all_findings = [f for f in all_findings if f.code not in all_ignore]
 
         # Calculate score and grade
         score = calculate_score(all_findings)
@@ -116,6 +132,8 @@ def main(argv: list[str] | None = None) -> int:
                               help="Show educational context for each finding")
     audit_parser.add_argument("--include-all", action="store_true",
                               help="Scan entire directory tree instead of just skill-standard directories")
+    audit_parser.add_argument("--min-score", type=int, default=None,
+                              help="Minimum passing score (exit 1 if below). Overrides .skilleval.yaml min_score.")
 
     # init command
     init_parser = subparsers.add_parser("init",
@@ -260,6 +278,16 @@ def main(argv: list[str] | None = None) -> int:
             if report.critical_count > 0:
                 worst_exit = max(worst_exit, 2)
             elif args.fail_on_warning and report.warning_count > 0:
+                worst_exit = max(worst_exit, 1)
+
+            # Check min_score (CLI flag overrides .skilleval.yaml)
+            min_score = args.min_score
+            if min_score is None:
+                config = load_config(skill_path)
+                min_score = config.min_score
+            if min_score and report.score < min_score:
+                if not args.quiet:
+                    print(f"Score {report.score} is below minimum {min_score}", file=sys.stderr)
                 worst_exit = max(worst_exit, 1)
 
         return worst_exit

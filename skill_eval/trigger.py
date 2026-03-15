@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from skill_eval.cost import estimate_trigger_cost, format_cost
 from skill_eval.eval_schemas import TriggerQuery, TriggerQueryResult, TriggerReport
 from skill_eval.agent_runner import AgentRunner, AgentNotAvailableError, get_runner
 
@@ -346,6 +347,20 @@ def _build_trigger_report(
         "mean_total_tokens_per_run": mean_total_tokens_per_run,
     }
 
+    # Estimated dollar cost
+    if all_totals:
+        all_inputs = [r.mean_input_tokens for r in query_results]
+        all_outputs = [r.mean_output_tokens for r in query_results]
+        mean_in = sum(all_inputs) / len(all_inputs) if all_inputs else 0
+        mean_out = sum(all_outputs) / len(all_outputs) if all_outputs else 0
+        cost_est = estimate_trigger_cost(
+            mean_input_tokens=mean_in,
+            mean_output_tokens=mean_out,
+            num_queries=total,
+            runs_per_query=1,  # already aggregated per query
+        )
+        summary["estimated_cost"] = cost_est
+
     return TriggerReport(
         skill_name=skill_name,
         skill_path=skill_path,
@@ -388,6 +403,10 @@ def _print_trigger_report(report: TriggerReport) -> None:
     mean_tok_run = summary.get("mean_total_tokens_per_run", 0)
     if mean_tok_run:
         print(f"  Mean tokens per run: {mean_tok_run:,.0f}")
+        # Estimated cost
+        ec = summary.get("estimated_cost")
+        if ec and ec.get("total_cost", 0) > 0:
+            print(f"  Estimated cost:      {format_cost(ec['total_cost'])} ({ec.get('model', 'sonnet')} pricing)")
         print(f"{'─' * w}")
 
     if report.passed:
