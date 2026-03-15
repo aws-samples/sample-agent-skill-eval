@@ -200,6 +200,14 @@ def run_unified_report(
     # ---- Print ----
     if format == "json":
         print(json.dumps(report_data, indent=2))
+    elif format == "html":
+        from skill_eval.html_report import generate_html_report
+        html_content = generate_html_report(report_data)
+        # Write HTML file alongside JSON
+        html_file = out_file.with_suffix(".html")
+        html_file.write_text(html_content, encoding="utf-8")
+        print(html_content)
+        print(f"\nHTML report written to: {html_file}", file=sys.stderr)
     else:
         _print_text_report(report_data)
 

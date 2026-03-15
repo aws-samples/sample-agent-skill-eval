@@ -116,7 +116,7 @@ def main(argv: list[str] | None = None) -> int:
     audit_parser = subparsers.add_parser("audit", help="Run security audit on a skill")
     audit_parser.add_argument("skill_path", nargs="+",
                               help="Path(s) to skill directory(ies)")
-    audit_parser.add_argument("--format", choices=["text", "json"], default="text",
+    audit_parser.add_argument("--format", choices=["text", "json", "html"], default="text",
                               help="Output format (default: text)")
     audit_parser.add_argument("--verbose", "-v", action="store_true",
                               help="Show INFO-level findings")
@@ -195,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
     report_parser = subparsers.add_parser("report",
                                            help="Run unified evaluation report (audit + functional + trigger)")
     report_parser.add_argument("skill_path", help="Path to the skill directory")
-    report_parser.add_argument("--format", choices=["text", "json"], default="text",
+    report_parser.add_argument("--format", choices=["text", "json", "html"], default="text",
                                 help="Output format (default: text)")
     report_parser.add_argument("--output", type=str, default=None,
                                 help="Path to write report file (default: <skill>/evals/report.json)")
@@ -272,6 +272,38 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{status} {report.score}/{report.grade} {report.skill_name} ({report.skill_path})")
             elif args.format == "json":
                 format_json_report(report)
+            elif args.format == "html":
+                from skill_eval.html_report import generate_html_report
+                # Build a minimal unified-style dict for the HTML renderer
+                report_data = {
+                    "skill_name": report.skill_name,
+                    "skill_path": report.skill_path,
+                    "timestamp": "",
+                    "overall_score": report.score / 100.0,
+                    "overall_grade": report.grade,
+                    "passed": report.passed,
+                    "sections": {
+                        "audit": {
+                            "score": report.score,
+                            "grade": report.grade,
+                            "passed": report.passed,
+                            "normalized": report.score / 100.0,
+                            "critical": report.critical_count,
+                            "warning": report.warning_count,
+                            "info": report.info_count,
+                            "findings": [
+                                {
+                                    "severity": f.severity.value,
+                                    "code": f.code,
+                                    "title": f.title,
+                                    "file_path": f.file_path or "",
+                                }
+                                for f in report.findings
+                            ],
+                        }
+                    },
+                }
+                print(generate_html_report(report_data))
             else:
                 format_text_report(report, verbose=args.verbose, explain=args.explain)
 

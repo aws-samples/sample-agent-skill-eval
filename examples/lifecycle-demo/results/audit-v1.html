@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Eval Report — pr-naming</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { color: #f8fafc; margin-bottom: 0.25rem; }
+  h2 {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+  }
+  .meta { color: #64748b; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #1e293b;
+    border-radius: 12px;
+    border: 1px solid #334155;
+  }
+  .grade-circle {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+  .hero-details { flex: 1; }
+  .hero-score { font-size: 1.5rem; font-weight: bold; color: #f8fafc; }
+  .hero-status { font-size: 0.9rem; margin-top: 0.25rem; }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #334155;
+  }
+  th { color: #94a3b8; font-weight: 500; }
+  td { color: #e2e8f0; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge-critical { background: #7f1d1d; color: #fca5a5; }
+  .badge-warning { background: #713f12; color: #fde047; }
+  .badge-info { background: #1e3a5f; color: #93c5fd; }
+  .badge-pass { background: #14532d; color: #86efac; }
+  .badge-fail { background: #7f1d1d; color: #fca5a5; }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #1e293b;
+  }
+  .metric-label { color: #94a3b8; }
+  .metric-value { color: #f8fafc; font-weight: 500; }
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+    color: #475569;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .skipped { color: #64748b; font-style: italic; }
+  .error { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<h1>🔍 Skill Evaluation Report</h1>
+<div class="meta">pr-naming &mdash; </div>
+
+<div class="hero">
+  <div class="grade-circle" style="background:#ef4444">F</div>
+  <div class="hero-details">
+    <div class="hero-score">Overall: 39.0%</div>
+    <div class="hero-status" style="color:#ef4444">FAILED</div>
+    <div style="color:#64748b;font-size:0.8rem;margin-top:0.25rem">/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1</div>
+  </div>
+</div>
+
+<h2>🛡️ Security Audit</h2>
+<div class="card">
+  <div class="card-title">
+    Score: 39/100
+    <span class="badge" style="background:#ef4444;color:#0f172a">F</span>
+  </div>
+  <div class="metric-row">
+    <span class="metric-label">Critical</span>
+    <span class="metric-value" style="color:#ef4444">1</span>
+  </div>
+  <div class="metric-row">
+    <span class="metric-label">Warning</span>
+    <span class="metric-value" style="color:#eab308">3</span>
+  </div>
+  <div class="metric-row">
+    <span class="metric-label">Info</span>
+    <span class="metric-value">3</span>
+  </div>
+  
+        <table>
+            <thead><tr><th>Severity</th><th>Code</th><th>Finding</th><th>File</th></tr></thead>
+            <tbody><tr>
+                <td><span class="badge badge-info">INFO</span></td>
+                <td>STR-008</td>
+                <td>Name doesn&#x27;t match directory</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/SKILL.md</td>
+            </tr><tr>
+                <td><span class="badge badge-warning">WARNING</span></td>
+                <td>STR-011</td>
+                <td>Description too short</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/SKILL.md</td>
+            </tr><tr>
+                <td><span class="badge badge-info">INFO</span></td>
+                <td>STR-017</td>
+                <td>Script missing shebang line</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/scripts/check_pr.py</td>
+            </tr><tr>
+                <td><span class="badge badge-critical">CRITICAL</span></td>
+                <td>SEC-001</td>
+                <td>Secret detected: GitHub Token (classic)</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/SKILL.md</td>
+            </tr><tr>
+                <td><span class="badge badge-warning">WARNING</span></td>
+                <td>SEC-003</td>
+                <td>Subprocess pattern: eval/exec</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/scripts/check_pr.py</td>
+            </tr><tr>
+                <td><span class="badge badge-info">INFO</span></td>
+                <td>SEC-003</td>
+                <td>Subprocess pattern: subprocess.run/call/Popen</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/scripts/check_pr.py</td>
+            </tr><tr>
+                <td><span class="badge badge-warning">WARNING</span></td>
+                <td>SEC-003</td>
+                <td>Subprocess pattern: shell=True</td>
+                <td>/home/ec2-user/agent-skill-evaluation/examples/lifecycle-demo/v1/scripts/check_pr.py</td>
+            </tr></tbody>
+        </table>
+</div>
+<h2>⚡ Functional Evaluation</h2><div class="card error">Error: Not run</div>
+<h2>🎯 Trigger Reliability</h2><div class="card error">Error: Not run</div>
+
+<div class="footer">
+  Generated by <strong>skill-eval</strong> &mdash;
+  <a href="https://github.com/aws-samples/sample-agent-skill-eval" style="color:#3b82f6">GitHub</a>
+</div>
+
+</body>
+</html>
