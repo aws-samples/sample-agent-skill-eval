@@ -206,7 +206,7 @@ class TestDryRun:
 
     def test_dry_run_missing_evals(self):
         ret = run_functional_eval(
-            str(FIXTURES / "good-skill"),  # No evals dir
+            str(FIXTURES / "bad-skill"),  # No evals dir
             dry_run=True,
         )
         assert ret == 2  # Error: no evals file

@@ -1,0 +1,751 @@
+{
+  "skill_name": "data-analysis",
+  "skill_path": "/home/ec2-user/agent-skill-evaluation/examples/data-analysis",
+  "eval_count": 6,
+  "runs_per_eval": 1,
+  "metadata": {
+    "timestamp": "2026-03-15T08:58:13Z"
+  },
+  "runs": [
+    {
+      "eval_id": "summary-stats",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "summary-stats",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'date'",
+            "passed": true,
+            "evidence": "Substring found: 'date'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'revenue'",
+            "passed": true,
+            "evidence": "Substring found: 'revenue'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '20'",
+            "passed": true,
+            "evidence": "Substring found: '20'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'units_sold'",
+            "passed": true,
+            "evidence": "Substring found: 'units_sold'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "does not contain 'error'",
+            "passed": true,
+            "evidence": "Substring not found (OK): 'error'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 69134,
+            "output_tokens": 743,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 16.67457316000946
+        },
+        "raw_output": "Here are the summary statistics for `sales.csv`:\n\n| Metric | Value |\n|---|---|\n| **Total rows** | 20 (excluding header) |\n| **Column names** | `date`, `product`, `region`, `revenue`, `units_sold` |\n| **Sum of revenue** | **86,700** |"
+      },
+      "without_skill": {
+        "eval_id": "summary-stats",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'date'",
+            "passed": true,
+            "evidence": "Substring found: 'date'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'revenue'",
+            "passed": true,
+            "evidence": "Substring found: 'revenue'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '20'",
+            "passed": true,
+            "evidence": "Substring found: '20'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'units_sold'",
+            "passed": true,
+            "evidence": "Substring found: 'units_sold'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "does not contain 'error'",
+            "passed": true,
+            "evidence": "Substring not found (OK): 'error'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 45151,
+            "output_tokens": 603,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 12.208028555847704
+        },
+        "raw_output": "Here are the summary statistics for `sales.csv`:\n\n| Metric | Value |\n|---|---|\n| **Total rows** | 20 (excluding header) |\n| **Column names** | `date`, `product`, `region`, `revenue`, `units_sold` |\n| **Sum of revenue** | **86,700** |"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "json-output",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "json-output",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "starts with '{'",
+            "passed": false,
+            "evidence": "Output does not start with: '{'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "ends with '}'",
+            "passed": false,
+            "evidence": "Output does not end with: '}'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'row_count'",
+            "passed": true,
+            "evidence": "Substring found: 'row_count'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'columns'",
+            "passed": true,
+            "evidence": "Substring found: 'columns'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "matches regex /\"row_count\"\\s*:\\s*20/",
+            "passed": true,
+            "evidence": "Regex /\"row_count\"\\s*:\\s*20/ matched",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.6,
+        "summary": "With skill: 60% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 68928,
+            "output_tokens": 259,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 11.024856992997229
+        },
+        "raw_output": "```json\n{\"row_count\": 20, \"columns\": [\"date\", \"product\", \"region\", \"revenue\", \"units_sold\"]}\n```"
+      },
+      "without_skill": {
+        "eval_id": "json-output",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "starts with '{'",
+            "passed": false,
+            "evidence": "Output does not start with: '{'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "ends with '}'",
+            "passed": false,
+            "evidence": "Output does not end with: '}'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'row_count'",
+            "passed": true,
+            "evidence": "Substring found: 'row_count'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'columns'",
+            "passed": true,
+            "evidence": "Substring found: 'columns'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "matches regex /\"row_count\"\\s*:\\s*20/",
+            "passed": true,
+            "evidence": "Regex /\"row_count\"\\s*:\\s*20/ matched",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.6,
+        "summary": "Without skill: 60% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 67437,
+            "output_tokens": 221,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 11.690041810972616
+        },
+        "raw_output": "```json\n{\"row_count\": 20, \"columns\": [\"date\", \"product\", \"region\", \"revenue\", \"units_sold\"]}\n```"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "top-products",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "top-products",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "has at least 3 lines",
+            "passed": true,
+            "evidence": "Line count: 5 (threshold: 3)",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Widget Pro'",
+            "passed": true,
+            "evidence": "Substring found: 'widget pro'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Gadget Plus'",
+            "passed": true,
+            "evidence": "Substring found: 'gadget plus'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Basic Widget'",
+            "passed": true,
+            "evidence": "Substring found: 'basic widget'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output lists products in descending order by total revenue",
+            "passed": true,
+            "evidence": "Products are listed as Widget Pro ($46,900) > Gadget Plus ($27,300) > Basic Widget ($12,500), which is descending order by total revenue.",
+            "method": "llm",
+            "confidence": 0.95,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 46148,
+            "output_tokens": 306,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 11.111986855976284
+        },
+        "raw_output": "Top 3 products by total revenue:\n\n1. **Widget Pro** \u2014 $46,900\n2. **Gadget Plus** \u2014 $27,300\n3. **Basic Widget** \u2014 $12,500"
+      },
+      "without_skill": {
+        "eval_id": "top-products",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "has at least 3 lines",
+            "passed": true,
+            "evidence": "Line count: 5 (threshold: 3)",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Widget Pro'",
+            "passed": true,
+            "evidence": "Substring found: 'widget pro'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Gadget Plus'",
+            "passed": true,
+            "evidence": "Substring found: 'gadget plus'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Basic Widget'",
+            "passed": true,
+            "evidence": "Substring found: 'basic widget'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output lists products in descending order by total revenue",
+            "passed": true,
+            "evidence": "Products are listed as Widget Pro ($46,900) > Gadget Plus ($27,300) > Basic Widget ($12,500), which is descending order by total revenue",
+            "method": "llm",
+            "confidence": 0.95,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 45161,
+            "output_tokens": 309,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 10.06043609813787
+        },
+        "raw_output": "Here are the top 3 products by total revenue:\n\n1. **Widget Pro** \u2014 $46,900\n2. **Gadget Plus** \u2014 $27,300\n3. **Basic Widget** \u2014 $12,500"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "anomaly-detection",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "anomaly-detection",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '15000' or contains '15,000'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '15,000' \u2014 Substring found: '15,000'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output identifies at least one outlier in the revenue column",
+            "passed": true,
+            "evidence": "The output clearly identifies Row 20 (Widget Pro, $15,000 revenue) as a 'single clear outlier' in the revenue column, noting it is far above the product's norm.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          },
+          {
+            "text": "the output explains why the value is anomalous (e.g., above average or standard deviation)",
+            "passed": true,
+            "evidence": "The output explains the anomaly in detail: revenue is +124% above the Widget Pro mean, nearly 2.5x the next-highest sale, and units sold are more than double the next-highest. It provides mean, range, and percentage comparisons to justify why the value is anomalous.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 94039,
+            "output_tokens": 1550,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 35.61371768498793
+        },
+        "raw_output": "## Analysis Results\n\n### Overview\n- **File:** sales.csv \u2014 20 rows, 5 columns (`date`, `product`, `region`, `revenue`, `units_sold`)\n- **Revenue range:** $1,800 \u2013 $15,000\n- **Mean revenue:** $4,335 | **Median:** $4,000\n\n---\n\n### Anomaly Found: Row 20\n\n| date | product | region | revenue | units_sold |\n|---|---|---|---|---|\n| 2024-03-15 | Widget Pro | East | **$15,000** | **95** |\n\nThis is the single clear outlier in the dataset. Here's why it's anomalous:\n\n**1. Revenue is far above the product's norm**\n- The other 6 Widget Pro sales have a mean of **$5,317** and a range of $4,500\u2013$6,100.\n- At $15,000, this entry is **+124% above the Widget Pro mean** and nearly **2.5x** the next-highest Widget Pro sale ($6,100).\n\n**2. Units sold is far above the product's norm**\n- Other Widget Pro entries sell 30\u201341 units. This entry shows **95 units** \u2014 more than double the next-highest.\n\n**3. The per-unit price is consistent** \u2014 this is important\n- Widget Pro's per-unit revenue is ~$148\u2013$150 across all entries. This outlier's per-unit price is **$157.89**, which is slightly elevated but not wildly off.\n- This means the anomaly is driven by **an unusually large order volume**, not a data-entry error in the revenue field. The revenue and units are internally consistent.\n\n---\n\n### Likely Explanations\n\n- **Bulk/institutional order:** Someone placed an order ~3x the normal size, possibly a business or reseller account.\n- **End-of-quarter push:** This is the last date in the dataset (March 15), and Q1-end sales spikes are common.\n- **Data consolidation error:** Multiple separate orders may have been rolled into a single row.\n\n### Recommendation\n\nInvestigate this transaction to determine if it represents a legitimate large sale or a data aggregation issue. If legitimate, consider flagging it separately in reporting so it doesn't skew trend analysis for typical Widget Pro sales."
+      },
+      "without_skill": {
+        "eval_id": "anomaly-detection",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '15000' or contains '15,000'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '15,000' \u2014 Substring found: '15,000'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output identifies at least one outlier in the revenue column",
+            "passed": true,
+            "evidence": "The output clearly identifies Row 20 (Widget Pro, East region, 2024-03-15: revenue = $15,000) as a clear outlier in the revenue column.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          },
+          {
+            "text": "the output explains why the value is anomalous (e.g., above average or standard deviation)",
+            "passed": true,
+            "evidence": "The output explains in detail why the value is anomalous: it is 2.8x the mean of other Widget Pro entries ($5,317), the units sold (95) are more than double the next highest (41), and it provides comparison tables and statistical reasoning.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 45163,
+            "output_tokens": 1222,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 25.660472275223583
+        },
+        "raw_output": "## Anomalous Revenue Values\n\nThere is **one clear outlier** in this dataset:\n\n**Row 20 \u2014 Widget Pro, East region, 2024-03-15: revenue = $15,000 (95 units)**\n\n### Why it's anomalous\n\n**1. Revenue is ~2.5x the product average**\n\nAll other Widget Pro entries fall in a tight range:\n\n| Date | Region | Revenue | Units |\n|------|--------|---------|-------|\n| 2024-01-15 | North | 4,500 | 30 |\n| 2024-01-22 | West | 5,200 | 35 |\n| 2024-02-01 | East | 4,800 | 32 |\n| 2024-02-15 | South | 5,500 | 37 |\n| 2024-03-01 | North | 6,100 | 41 |\n| 2024-03-15 | West | 5,800 | 39 |\n| **2024-03-15** | **East** | **15,000** | **95** |\n\nThe typical Widget Pro revenue is ~$4,500\u2013$6,100 (mean \u2248 $5,317). The $15,000 value is **2.8x the mean** of the other entries.\n\n**2. Units sold is also an extreme outlier**\n\nUnits for Widget Pro normally range from 30\u201341. The 95 units in this row is **more than double** the next highest value (41), suggesting either a bulk order, a data entry error, or an unusual event.\n\n**3. Revenue-per-unit is consistent, pointing to a volume anomaly**\n\nInterestingly, the per-unit price is nearly the same across all Widget Pro rows (~$149\u2013$150/unit), and this row comes to ~$158/unit \u2014 close but slightly elevated. This suggests the anomaly is primarily driven by an **unusually large order volume** rather than a pricing error, though the slight price premium could indicate a different deal structure.\n\n### No other products show anomalies\n\n- **Gadget Plus** revenues range $3,200\u2013$4,500 \u2014 consistent.\n- **Basic Widget** revenues range $1,800\u2013$2,400 \u2014 consistent.\n\n### Possible explanations\n\n- **Bulk/wholesale order** in the East region on 2024-03-15\n- **Data entry error** (e.g., two orders combined into one row)\n- **End-of-quarter push** (March 15 is mid-Q1) driving an unusually large sale"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "region-breakdown",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "region-breakdown",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'North'",
+            "passed": true,
+            "evidence": "Substring found: 'north'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'South'",
+            "passed": true,
+            "evidence": "Substring found: 'south'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'East'",
+            "passed": true,
+            "evidence": "Substring found: 'east'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'West'",
+            "passed": true,
+            "evidence": "Substring found: 'west'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output is formatted as a table with regions and their revenue totals",
+            "passed": true,
+            "evidence": "The output contains a markdown table with columns for Region, Total Revenue, and % of Total, listing East, North, West, and South regions with their respective revenue totals.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 69141,
+            "output_tokens": 567,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 15.89511697506532
+        },
+        "raw_output": "Here's the total revenue by region:\n\n| Region | Total Revenue | % of Total |\n|--------|--------------|------------|\n| East   | $27,600      | 31.8%      |\n| North  | $21,000      | 24.2%      |\n| West   | $20,450      | 23.6%      |\n| South  | $17,650      | 20.4%      |\n| **Total** | **$86,700** | **100%** |\n\n**Key observations:**\n\n- **East** leads all regions at $27,600, largely driven by a single high-volume Widget Pro sale of $15,000 (95 units) on 2024-03-15 \u2014 this looks like a potential bulk order or anomaly worth investigating.\n- **North, West, and South** are relatively balanced in the $17K\u2013$21K range.\n- Excluding the outlier East sale, the regions would be much more evenly distributed."
+      },
+      "without_skill": {
+        "eval_id": "region-breakdown",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'North'",
+            "passed": true,
+            "evidence": "Substring found: 'north'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'South'",
+            "passed": true,
+            "evidence": "Substring found: 'south'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'East'",
+            "passed": true,
+            "evidence": "Substring found: 'east'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'West'",
+            "passed": true,
+            "evidence": "Substring found: 'west'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output is formatted as a table with regions and their revenue totals",
+            "passed": true,
+            "evidence": "The output contains a markdown table with columns 'Region' and 'Total Revenue', listing East, North, West, South regions with their respective revenue totals.",
+            "method": "llm",
+            "confidence": 0.99,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 45161,
+            "output_tokens": 389,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 14.773387409048155
+        },
+        "raw_output": "| Region | Total Revenue |\n|--------|--------------|\n| East   | $27,600      |\n| North  | $21,000      |\n| West   | $20,450      |\n| South  | $17,650      |\n| **Total** | **$86,700** |\n\nEast leads in revenue, largely driven by a high-volume Widget Pro sale on 2024-03-15 ($15,000). The remaining three regions are relatively close, ranging from $17,650 to $21,000."
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "script-execution",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "script-execution",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '20'",
+            "passed": true,
+            "evidence": "Substring found: '20'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'revenue'",
+            "passed": true,
+            "evidence": "Substring found: 'revenue'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output references running the analysis script or its results",
+            "passed": false,
+            "evidence": "The output presents detailed analytical findings (averages, medians, anomalies, trends) but never explicitly references running a script, executing code, or attributes the results to a script. It reads as a direct analysis summary rather than referencing script execution or script-produced output.",
+            "method": "llm",
+            "confidence": 0.8,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.6666666666666666,
+        "summary": "With skill: 67% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 144447,
+            "output_tokens": 2292,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 41.31147772097029
+        },
+        "raw_output": "## Key Findings\n\n**Overview**: 20 sales records across 6 dates, 3 products, and 4 regions.\n\n**Revenue**:\n- Average revenue per record: **$4,335**, median **$4,000**\n- Range: $1,800 \u2013 $15,000\n- **Widget Pro** has 7 entries (most records tied with Gadget Plus) and consistently generates the highest revenue\n- **Basic Widget** has the lowest revenue per transaction (~$1,800\u2013$2,400)\n\n**Units Sold**:\n- Average: **37.15 units**, median **36**\n- Basic Widget sells more units at lower price points; Widget Pro sells fewer units at higher prices\n\n**Anomaly Detected (Row 20)**:\n- **Widget Pro, East region, 2024-03-15**: $15,000 revenue and 95 units sold\n- This is a clear outlier \u2014 revenue is **~3.8x the mean** and units sold are **~2.6x the mean**, both beyond 2 standard deviations\n- This warrants investigation: could be a bulk order, data entry error, or a special promotion\n\n**Trend**: Revenue shows an upward trend from January to March (e.g., Widget Pro North went from $4,500 in Jan to $6,100 in Mar), suggesting growing sales momentum across Q1 2024."
+      },
+      "without_skill": {
+        "eval_id": "script-execution",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '20'",
+            "passed": true,
+            "evidence": "Substring found: '20'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'revenue'",
+            "passed": true,
+            "evidence": "Substring found: 'revenue'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "the output references running the analysis script or its results",
+            "passed": false,
+            "evidence": "The output presents detailed statistical findings (means, medians, distributions, outlier detection) which are clearly analysis results, but it never explicitly references running an analysis script, invoking a script, or attributes the findings to a script's output. It presents the results directly without mentioning any script.",
+            "method": "llm",
+            "confidence": 0.65,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.6666666666666666,
+        "summary": "Without skill: 67% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 94453,
+            "output_tokens": 638,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 19.346381748095155
+        },
+        "raw_output": "## Key Findings\n\n**Dataset overview:** 20 rows, 5 columns, spanning 6 dates from Jan\u2013Mar 2024 across 3 products and 4 regions.\n\n**Revenue:**\n- Range: $1,800 \u2013 $15,000; mean $4,335, median $4,000\n- Revenue is right-skewed (mean > median), pulled up by a high outlier\n\n**Units sold:**\n- Range: 20 \u2013 95; mean 37.15, median 36\n- Similarly right-skewed due to the same outlier\n\n**Categorical distribution:**\n- Products are evenly split (~6\u20137 records each): Widget Pro, Gadget Plus, Basic Widget\n- Regions are perfectly balanced (5 each): North, South, East, West\n\n**Anomaly detected \u2014 Row 20:**\n- **Widget Pro, East region, 2024-03-15** had $15,000 revenue and 95 units sold\n- Both values exceed 2 standard deviations from the mean (revenue is ~3.8x the mean, units sold is ~2.6x the mean)\n- This is the only outlier in the dataset and warrants investigation \u2014 it could indicate a bulk order, data entry error, or a successful promotion"
+      },
+      "delta_pass_rate": 0.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 0.8778,
+      "stddev_pass_rate": 0.1905,
+      "mean_tokens": 952.8,
+      "mean_input_tokens": 81972.8,
+      "mean_output_tokens": 952.8,
+      "mean_total_tokens": 82925.7,
+      "mean_tool_calls": 0.0
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.8778,
+      "stddev_pass_rate": 0.1905,
+      "mean_tokens": 563.7,
+      "mean_input_tokens": 57087.7,
+      "mean_output_tokens": 563.7,
+      "mean_total_tokens": 57651.3,
+      "mean_tool_calls": 0.0
+    },
+    "delta": {
+      "pass_rate": 0.0,
+      "tokens": 389.2,
+      "total_tokens": 25274.3,
+      "input_tokens": 24885.2,
+      "tool_calls": 0.0
+    },
+    "cost_efficiency": {
+      "quality_delta": 0.0,
+      "cost_delta_pct": 43.8,
+      "classification": "PARETO_WORSE",
+      "emoji": "\ud83d\udd34",
+      "description": "Skill increases cost without improving quality"
+    }
+  },
+  "scores": {
+    "outcome": 0.8778,
+    "process": 0.0,
+    "style": 0.8778,
+    "efficiency": 0.8202,
+    "overall": 0.6439
+  },
+  "passed": true
+}

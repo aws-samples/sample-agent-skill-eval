@@ -1,0 +1,70 @@
+{
+  "skill_name": "good-skill",
+  "skill_path": "/home/ec2-user/agent-skill-evaluation/tests/fixtures/good-skill",
+  "query_results": [
+    {
+      "query": "Process this input file and return the results",
+      "should_trigger": true,
+      "trigger_count": 0,
+      "run_count": 1,
+      "trigger_rate": 0.0,
+      "passed": false,
+      "mean_input_tokens": 69150.0,
+      "mean_output_tokens": 687.0,
+      "mean_total_tokens": 69837.0
+    },
+    {
+      "query": "Run the test skill on my data",
+      "should_trigger": true,
+      "trigger_count": 0,
+      "run_count": 1,
+      "trigger_rate": 0.0,
+      "passed": false,
+      "mean_input_tokens": 0.0,
+      "mean_output_tokens": 0.0,
+      "mean_total_tokens": 0.0
+    },
+    {
+      "query": "What's the weather forecast for tomorrow?",
+      "should_trigger": false,
+      "trigger_count": 0,
+      "run_count": 1,
+      "trigger_rate": 0.0,
+      "passed": true,
+      "mean_input_tokens": 22660.0,
+      "mean_output_tokens": 99.0,
+      "mean_total_tokens": 22759.0
+    },
+    {
+      "query": "Help me write a SQL query",
+      "should_trigger": false,
+      "trigger_count": 0,
+      "run_count": 1,
+      "trigger_rate": 0.0,
+      "passed": true,
+      "mean_input_tokens": 22658.0,
+      "mean_output_tokens": 157.0,
+      "mean_total_tokens": 22815.0
+    },
+    {
+      "query": "Translate this text to French",
+      "should_trigger": false,
+      "trigger_count": 0,
+      "run_count": 1,
+      "trigger_rate": 0.0,
+      "passed": true,
+      "mean_input_tokens": 22658.0,
+      "mean_output_tokens": 324.0,
+      "mean_total_tokens": 22982.0
+    }
+  ],
+  "summary": {
+    "total_queries": 5,
+    "passed": 3,
+    "failed": 2,
+    "trigger_precision": 0.0,
+    "no_trigger_precision": 1.0,
+    "mean_total_tokens_per_run": 27678.6
+  },
+  "passed": false
+}

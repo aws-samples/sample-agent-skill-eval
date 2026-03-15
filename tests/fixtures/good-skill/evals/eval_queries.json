@@ -1,0 +1,7 @@
+[
+  {"query": "Process this input file and return the results", "should_trigger": true},
+  {"query": "Run the test skill on my data", "should_trigger": true},
+  {"query": "What's the weather forecast for tomorrow?", "should_trigger": false},
+  {"query": "Help me write a SQL query", "should_trigger": false},
+  {"query": "Translate this text to French", "should_trigger": false}
+]

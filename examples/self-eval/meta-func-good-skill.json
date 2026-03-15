@@ -1,0 +1,243 @@
+{
+  "skill_name": "good-skill",
+  "skill_path": "/home/ec2-user/agent-skill-evaluation/tests/fixtures/good-skill",
+  "eval_count": 2,
+  "runs_per_eval": 1,
+  "metadata": {
+    "timestamp": "2026-03-15T09:12:44Z"
+  },
+  "runs": [
+    {
+      "eval_id": "process-input",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "process-input",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'ok'",
+            "passed": false,
+            "evidence": "Substring not found: 'ok'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'length'",
+            "passed": false,
+            "evidence": "Substring not found: 'length'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "does not contain 'error'",
+            "passed": true,
+            "evidence": "Substring not found (OK): 'error'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.3333333333333333,
+        "summary": "With skill: 33% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 162251,
+            "output_tokens": 1028,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 28.421670546056703
+        },
+        "raw_output": "Done. Here's a summary of what happened following the good-skill's steps:\n\n1. **Read the input** \u2014 Created `test_input.txt` with the content `hello world`\n2. **Process it** \u2014 Created `scripts/process.py` (since it didn't exist) which reads a file, strips whitespace, and converts to uppercase\n3. **Output the result** \u2014 Running `python3 scripts/process.py test_input.txt` produced:\n   ```\n   HELLO WORLD\n   ```"
+      },
+      "without_skill": {
+        "eval_id": "process-input",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'ok'",
+            "passed": false,
+            "evidence": "Substring not found: 'ok'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'length'",
+            "passed": false,
+            "evidence": "Substring not found: 'length'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "does not contain 'error'",
+            "passed": true,
+            "evidence": "Substring not found (OK): 'error'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.3333333333333333,
+        "summary": "Without skill: 33% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 114626,
+            "output_tokens": 752,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 21.191887160064653
+        },
+        "raw_output": "Done. Here's what happened:\n\n1. **Created** `test_input.txt` with the content `hello world`\n2. **Ran** `scripts/process.py` on it \u2014 the script reads the file, strips whitespace, and converts to uppercase\n3. **Output:** `HELLO WORLD`\n\nNote: There is no skill called \"good-skill\" in the available skills list, so I ran the script directly. The `process.py` script simply reads a text file, strips whitespace, and uppercases the content."
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "describe-skill",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "describe-skill",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'good-skill'",
+            "passed": true,
+            "evidence": "Substring found: 'good-skill'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Apache' or contains 'apache'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'apache' \u2014 Substring found: 'apache'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'test' or contains 'testing'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'test' \u2014 Substring found: 'test'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 44911,
+            "output_tokens": 241,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 10.255599607015029
+        },
+        "raw_output": "The SKILL.md file doesn't exist as a separate file in the working directory. However, the skill definition was provided inline in the system prompt. Based on that definition:\n\n**Name:** good-skill\n\n**Description:** A well-structured test skill that follows the agentskills.io spec. It's intended for use when testing skill evaluation tools.\n\n**License:** Apache-2.0\n\n**Metadata:**\n- Author: test\n- Version: 1.0\n\n**What it does:** This is a properly structured skill designed for testing purposes. Its workflow follows three steps:\n1. Read the input\n2. Process it\n3. Output the result\n\nIt's essentially a template/example skill used to validate that skill evaluation tooling works correctly, rather than providing specific domain functionality."
+      },
+      "without_skill": {
+        "eval_id": "describe-skill",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'good-skill'",
+            "passed": false,
+            "evidence": "Substring not found: 'good-skill'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'Apache' or contains 'apache'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'apache': Substring not found: 'apache'; contains 'apache': Substring not found: 'apache'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'test' or contains 'testing'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'test': Substring not found: 'test'; contains 'testing': Substring not found: 'testing'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.0,
+        "summary": "Without skill: 0% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 89699,
+            "output_tokens": 276,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 16.274377248017117
+        },
+        "raw_output": "The working directory `/tmp/skill-eval-0bqu0zrj/` appears to be empty \u2014 there is no `SKILL.md` file or any other files present. Could you provide the path to the `SKILL.md` file you'd like me to read, or check that the file has been placed in the correct location?"
+      },
+      "delta_pass_rate": 1.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 0.6667,
+      "stddev_pass_rate": 0.4714,
+      "mean_tokens": 634.5,
+      "mean_input_tokens": 103581.0,
+      "mean_output_tokens": 634.5,
+      "mean_total_tokens": 104215.5,
+      "mean_tool_calls": 0.0
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.1667,
+      "stddev_pass_rate": 0.2357,
+      "mean_tokens": 514.0,
+      "mean_input_tokens": 102162.5,
+      "mean_output_tokens": 514.0,
+      "mean_total_tokens": 102676.5,
+      "mean_tool_calls": 0.0
+    },
+    "delta": {
+      "pass_rate": 0.5,
+      "tokens": 120.5,
+      "total_tokens": 1539.0,
+      "input_tokens": 1418.5,
+      "tool_calls": 0.0
+    },
+    "cost_efficiency": {
+      "quality_delta": 0.5,
+      "cost_delta_pct": 1.5,
+      "classification": "TRADEOFF",
+      "emoji": "\ud83d\udfe1",
+      "description": "Skill improves quality but increases cost"
+    }
+  },
+  "scores": {
+    "outcome": 0.6667,
+    "process": 0.0,
+    "style": 0.6667,
+    "efficiency": 1.0,
+    "overall": 0.5833
+  },
+  "passed": true
+}

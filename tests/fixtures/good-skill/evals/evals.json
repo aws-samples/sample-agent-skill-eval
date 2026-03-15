@@ -1,0 +1,24 @@
+[
+  {
+    "id": "process-input",
+    "prompt": "Use the good-skill to process a text file. Create a small test file with the content 'hello world' and run scripts/process.py on it.",
+    "expected_output": "The script outputs JSON with status 'ok' and the length of the input.",
+    "files": [],
+    "assertions": [
+      "contains 'ok'",
+      "contains 'length'",
+      "does not contain 'error'"
+    ]
+  },
+  {
+    "id": "describe-skill",
+    "prompt": "Read the SKILL.md and describe what this skill does, including its name and license.",
+    "expected_output": "The skill is named 'good-skill', licensed under Apache-2.0, and is a well-structured test skill.",
+    "files": [],
+    "assertions": [
+      "contains 'good-skill'",
+      "contains 'Apache' or contains 'apache'",
+      "contains 'test' or contains 'testing'"
+    ]
+  }
+]

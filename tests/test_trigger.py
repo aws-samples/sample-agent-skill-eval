@@ -201,7 +201,7 @@ class TestDryRun:
 
     def test_dry_run_missing_queries(self):
         ret = run_trigger_eval(
-            str(FIXTURES / "good-skill"),  # No evals dir
+            str(FIXTURES / "bad-skill"),  # No evals dir
             dry_run=True,
         )
         assert ret == 2

@@ -1,0 +1,8 @@
+[
+  {"query": "What's the weather like in Sydney today?", "should_trigger": true},
+  {"query": "Is it going to rain tomorrow in London?", "should_trigger": true},
+  {"query": "Get me the current temperature for Tokyo", "should_trigger": true},
+  {"query": "Write a Python function to sort a list", "should_trigger": false},
+  {"query": "Help me debug this React component", "should_trigger": false},
+  {"query": "Summarize this PDF document for me", "should_trigger": false}
+]

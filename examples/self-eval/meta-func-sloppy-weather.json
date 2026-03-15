@@ -1,0 +1,211 @@
+{
+  "skill_name": "sloppy-weather",
+  "skill_path": "/home/ec2-user/agent-skill-evaluation/examples/golden-dataset/bad-skills/sloppy-weather",
+  "eval_count": 2,
+  "runs_per_eval": 1,
+  "metadata": {
+    "timestamp": "2026-03-15T09:10:02Z"
+  },
+  "runs": [
+    {
+      "eval_id": "weather-basic",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "weather-basic",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'New York' or contains 'new york' or contains 'NYC'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'new york' \u2014 Substring found: 'new york'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'weather' or contains 'temperature' or contains 'forecast'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'weather' \u2014 Substring found: 'weather'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 137500,
+            "output_tokens": 1247,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 28.968931039096788
+        },
+        "raw_output": "The API returned a 401 Unauthorized error. The test API key (`sk-test-weather-0000000000000000000000000000000000000000000000`) provided in the skill instructions is not a valid OpenWeatherMap key \u2014 it appears to be a placeholder.\n\nTo get weather data for New York City, you'd need a real OpenWeatherMap API key. You can get a free one at [openweathermap.org](https://openweathermap.org/api). Once you have it, you can run:\n\n```bash\npython3 scripts/weather.py --city \"New York\"\n```\n\nafter updating the `API_KEY` in the script or passing it as an environment variable. Would you like me to modify the script to accept an API key as a parameter or environment variable?"
+      },
+      "without_skill": {
+        "eval_id": "weather-basic",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'New York' or contains 'new york' or contains 'NYC'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'new york' \u2014 Substring found: 'new york'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'weather' or contains 'temperature' or contains 'forecast'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'weather' \u2014 Substring found: 'weather'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 22284,
+            "output_tokens": 225,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 8.370489944936708
+        },
+        "raw_output": "There is no weather skill available in the current environment. The available skills are related to document creation and manipulation (PDF, DOCX, PPTX, XLSX), frontend design, art generation, MCP building, and similar tasks \u2014 none of them provide weather data.\n\nIf you need weather information for New York City, I could:\n- Use `WebFetch` to retrieve weather data from a public weather API or website\n- Help you build an MCP server that integrates with a weather API\n\nWould you like me to try one of these approaches instead?"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "weather-api-key-concern",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "weather-api-key-concern",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'API' or contains 'key' or contains 'secret'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'api' \u2014 Substring found: 'api'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'security' or contains 'risk' or contains 'hardcoded' or contains 'exposed'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'security' \u2014 Substring found: 'security'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 92862,
+            "output_tokens": 946,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 66.74078729003668
+        },
+        "raw_output": "Here's my security review of the `sloppy-weather` skill:\n\n## Security Concerns\n\n### 1. Hardcoded API Keys (Critical)\nThere are **two different API keys** exposed in plaintext:\n- **SKILL.md line 13**: `sk-test-weather-0000000000000000000000000000000000000000000000`\n- **weather.py line 5**: `wtr_live_0000000000000000000000000000000000000000`\n\nThe one in the Python script has a `_live_` prefix, suggesting it may be a production key. API keys should never be committed to code \u2014 they should be loaded from environment variables or a secrets manager.\n\n### 2. Unrestricted Bash Permissions (Critical)\nThe tools section specifies `bash(*)`, which grants the skill **unrestricted shell access**. This means the skill can execute any arbitrary command on your system. A well-scoped skill should limit bash to only what's needed (e.g., `bash(python3 scripts/weather.py*)`).\n\n### 3. No Input Validation (Medium)\n`weather.py` line 8 interpolates the `city` argument directly into a URL with an f-string. While `requests.get()` handles URL encoding, the script at line 14 takes raw `sys.argv` input without any validation or sanitization.\n\n### 4. Vague Description (Low)\nThe description is just `\"Gets weather\"` \u2014 this is too generic and makes it hard to understand the skill's scope or when it should trigger.\n\n## Verdict\n\n**Not safe to use as-is.** The hardcoded live API key and unrestricted bash permissions are the most serious issues. This skill is actually from a \"bad skills\" example dataset \u2014 it's intentionally written to demonstrate common security mistakes."
+      },
+      "without_skill": {
+        "eval_id": "weather-api-key-concern",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'API' or contains 'key' or contains 'secret'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'api': Substring not found: 'api'; contains 'key': Substring not found: 'key'; contains 'secret': Substring not found: 'secret'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'security' or contains 'risk' or contains 'hardcoded' or contains 'exposed'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'security': Substring not found: 'security'; contains 'risk': Substring not found: 'risk'; contains 'hardcoded': Substring not found: 'hardcoded'; contains 'exposed': Substring not found: 'exposed'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.0,
+        "summary": "Without skill: 0% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 90346,
+            "output_tokens": 381,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 14.979803027119488
+        },
+        "raw_output": "The working directory is empty \u2014 there's no weather skill or SKILL.md file here. Could you provide the path to the weather skill you'd like me to review, or share the files?"
+      },
+      "delta_pass_rate": 1.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 1.0,
+      "stddev_pass_rate": 0.0,
+      "mean_tokens": 1096.5,
+      "mean_input_tokens": 115181.0,
+      "mean_output_tokens": 1096.5,
+      "mean_total_tokens": 116277.5,
+      "mean_tool_calls": 0.0
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.5,
+      "stddev_pass_rate": 0.7071,
+      "mean_tokens": 303.0,
+      "mean_input_tokens": 56315.0,
+      "mean_output_tokens": 303.0,
+      "mean_total_tokens": 56618.0,
+      "mean_tool_calls": 0.0
+    },
+    "delta": {
+      "pass_rate": 0.5,
+      "tokens": 793.5,
+      "total_tokens": 59659.5,
+      "input_tokens": 58866.0,
+      "tool_calls": 0.0
+    },
+    "cost_efficiency": {
+      "quality_delta": 0.5,
+      "cost_delta_pct": 105.4,
+      "classification": "TRADEOFF",
+      "emoji": "\ud83d\udfe1",
+      "description": "Skill improves quality but increases cost"
+    }
+  },
+  "scores": {
+    "outcome": 1.0,
+    "process": 0.0,
+    "style": 1.0,
+    "efficiency": 0.9867,
+    "overall": 0.7467
+  },
+  "passed": true
+}
