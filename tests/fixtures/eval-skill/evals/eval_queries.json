@@ -1,0 +1,18 @@
+[
+  {
+    "query": "Analyze the CSV file and give me summary statistics",
+    "should_trigger": true
+  },
+  {
+    "query": "Process this CSV data and summarize it",
+    "should_trigger": true
+  },
+  {
+    "query": "Write me a haiku about the ocean",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the capital of France?",
+    "should_trigger": false
+  }
+]

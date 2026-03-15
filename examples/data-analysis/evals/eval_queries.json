@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Analyze the sales data in my CSV and give me a breakdown by region",
+    "should_trigger": true
+  },
+  {
+    "query": "Read this spreadsheet and compute summary statistics",
+    "should_trigger": true
+  },
+  {
+    "query": "What patterns do you see in the Q3 revenue numbers?",
+    "should_trigger": true
+  },
+  {
+    "query": "Find outliers in my dataset and explain why they're unusual",
+    "should_trigger": true
+  },
+  {
+    "query": "How many rows and columns are in this CSV file?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write me a poem about autumn",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I reset my password?",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy my application to production",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you resize this image to 800x600 pixels?",
+    "should_trigger": false
+  },
+  {
+    "query": "Query the database for all users created last month",
+    "should_trigger": false
+  }
+]

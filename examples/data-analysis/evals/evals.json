@@ -1,0 +1,76 @@
+[
+  {
+    "id": "summary-stats",
+    "prompt": "Read sales.csv and output summary statistics: total rows, column names, and the sum of the revenue column.",
+    "expected_output": "The file has 20 rows. Columns: date, product, region, revenue, units_sold. Total revenue: $86,700.",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "contains 'date'",
+      "contains 'revenue'",
+      "contains '20'",
+      "contains 'units_sold'",
+      "does not contain 'error'"
+    ]
+  },
+  {
+    "id": "json-output",
+    "prompt": "Read sales.csv and output ONLY a JSON object with keys 'row_count' (integer) and 'columns' (array of strings). No explanation.",
+    "expected_output": "{\"row_count\": 20, \"columns\": [\"date\", \"product\", \"region\", \"revenue\", \"units_sold\"]}",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "starts with '{'",
+      "ends with '}'",
+      "contains 'row_count'",
+      "contains 'columns'",
+      "matches regex /\"row_count\"\\s*:\\s*20/"
+    ]
+  },
+  {
+    "id": "top-products",
+    "prompt": "Read sales.csv and list the top 3 products by total revenue. Format as a numbered list with product name and total revenue.",
+    "expected_output": "1. Widget Pro — $46,900\n2. Gadget Plus — $27,300\n3. Basic Widget — $12,500",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "has at least 3 lines",
+      "contains 'Widget Pro'",
+      "contains 'Gadget Plus'",
+      "contains 'Basic Widget'",
+      "the output lists products in descending order by total revenue"
+    ]
+  },
+  {
+    "id": "anomaly-detection",
+    "prompt": "Read sales.csv and identify any anomalous revenue values (outliers). Explain why they are anomalous.",
+    "expected_output": "Row 19 has an anomalous revenue of $15,000 for Widget Pro, which is significantly above the mean revenue.",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "contains '15000' or contains '15,000'",
+      "the output identifies at least one outlier in the revenue column",
+      "the output explains why the value is anomalous (e.g., above average or standard deviation)"
+    ]
+  },
+  {
+    "id": "region-breakdown",
+    "prompt": "Read sales.csv and produce a breakdown of total revenue by region. Format as a markdown table.",
+    "expected_output": "| Region | Total Revenue |\n|--------|---------------|\n| North | $21,000 |\n| South | $17,650 |\n| East | $27,600 |\n| West | $20,450 |",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "contains 'North'",
+      "contains 'South'",
+      "contains 'East'",
+      "contains 'West'",
+      "the output is formatted as a table with regions and their revenue totals"
+    ]
+  },
+  {
+    "id": "script-execution",
+    "prompt": "Run the data analysis script on sales.csv: python3 scripts/analyze_csv.py sales.csv. Report the key findings.",
+    "expected_output": "The analysis shows 20 rows and 5 columns. Revenue ranges from $1,800 to $15,000 with anomalies detected.",
+    "files": ["files/sales.csv"],
+    "assertions": [
+      "contains '20'",
+      "contains 'revenue'",
+      "the output references running the analysis script or its results"
+    ]
+  }
+]

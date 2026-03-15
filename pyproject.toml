@@ -1,0 +1,33 @@
+[project]
+name = "agent-skill-evaluation"
+version = "0.1.0"
+description = "Security and quality evaluation framework for Agent Skills"
+readme = "README.md"
+license = "MIT-0"
+requires-python = ">=3.10"
+authors = [
+    {name = "Melanie Li", email = "lpy1222@gmail.com"},
+]
+keywords = ["agent-skills", "evaluation", "security", "audit", "llm"]
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+skill-eval = "skill_eval.cli:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["skill_eval*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

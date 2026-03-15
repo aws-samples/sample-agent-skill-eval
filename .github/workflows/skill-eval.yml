@@ -1,0 +1,161 @@
+name: Skill Evaluation
+
+on:
+  workflow_call:
+    inputs:
+      skill_path:
+        description: "Path to the skill directory to evaluate"
+        required: true
+        type: string
+      python_version:
+        description: "Python version to use"
+        required: false
+        type: string
+        default: "3.12"
+      run_functional:
+        description: "Run functional evaluation (requires evals/evals.json)"
+        required: false
+        type: boolean
+        default: false
+      run_trigger:
+        description: "Run trigger evaluation (requires evals/eval_queries.json)"
+        required: false
+        type: boolean
+        default: false
+      fail_on_warning:
+        description: "Fail the workflow if any audit warnings are found"
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      passed:
+        description: "Whether the skill passed all evaluations"
+        value: ${{ jobs.evaluate.outputs.passed }}
+      grade:
+        description: "Overall letter grade (A-F)"
+        value: ${{ jobs.evaluate.outputs.grade }}
+      score:
+        description: "Overall numeric score (0-100 for audit-only, 0-1 for unified)"
+        value: ${{ jobs.evaluate.outputs.score }}
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    outputs:
+      passed: ${{ steps.result.outputs.passed }}
+      grade: ${{ steps.result.outputs.grade }}
+      score: ${{ steps.result.outputs.score }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install skill-eval
+        run: pip install .
+
+      - name: Run audit
+        id: audit
+        run: |
+          set +e
+          if [ "${{ inputs.fail_on_warning }}" = "true" ]; then
+            skill-eval audit "${{ inputs.skill_path }}" --format json --fail-on-warning > audit_results.json 2>&1
+          else
+            skill-eval audit "${{ inputs.skill_path }}" --format json > audit_results.json 2>&1
+          fi
+          AUDIT_EXIT=$?
+          echo "exit_code=$AUDIT_EXIT" >> "$GITHUB_OUTPUT"
+          cat audit_results.json
+
+      - name: Run functional evaluation
+        id: functional
+        if: inputs.run_functional
+        run: |
+          set +e
+          skill-eval functional "${{ inputs.skill_path }}" --format json > functional_results.json 2>&1
+          FUNC_EXIT=$?
+          echo "exit_code=$FUNC_EXIT" >> "$GITHUB_OUTPUT"
+          cat functional_results.json
+
+      - name: Run trigger evaluation
+        id: trigger
+        if: inputs.run_trigger
+        run: |
+          set +e
+          skill-eval trigger "${{ inputs.skill_path }}" --format json > trigger_results.json 2>&1
+          TRIGGER_EXIT=$?
+          echo "exit_code=$TRIGGER_EXIT" >> "$GITHUB_OUTPUT"
+          cat trigger_results.json
+
+      - name: Determine result
+        id: result
+        run: |
+          AUDIT_EXIT=${{ steps.audit.outputs.exit_code }}
+
+          # Default: audit-only results
+          PASSED="true"
+          GRADE="A"
+          SCORE="100"
+
+          if [ "$AUDIT_EXIT" = "2" ]; then
+            PASSED="false"
+            GRADE="F"
+            SCORE="0"
+          elif [ "$AUDIT_EXIT" = "1" ]; then
+            if [ "${{ inputs.fail_on_warning }}" = "true" ]; then
+              PASSED="false"
+            fi
+          fi
+
+          # Extract audit score from JSON if available
+          if [ -f audit_results.json ]; then
+            AUDIT_SCORE=$(python3 -c "
+          import json, sys
+          try:
+              data = json.load(open('audit_results.json'))
+              print(data.get('score', 100))
+          except Exception:
+              print(100)
+          " 2>/dev/null || echo "100")
+            SCORE="$AUDIT_SCORE"
+            GRADE=$(python3 -c "
+          s = int('$AUDIT_SCORE')
+          print('A' if s >= 90 else 'B' if s >= 80 else 'C' if s >= 70 else 'D' if s >= 60 else 'F')
+          " 2>/dev/null || echo "A")
+          fi
+
+          # Check functional result
+          if [ "${{ inputs.run_functional }}" = "true" ]; then
+            FUNC_EXIT="${{ steps.functional.outputs.exit_code }}"
+            if [ "$FUNC_EXIT" != "0" ] && [ -n "$FUNC_EXIT" ]; then
+              PASSED="false"
+            fi
+          fi
+
+          # Check trigger result
+          if [ "${{ inputs.run_trigger }}" = "true" ]; then
+            TRIGGER_EXIT="${{ steps.trigger.outputs.exit_code }}"
+            if [ "$TRIGGER_EXIT" != "0" ] && [ -n "$TRIGGER_EXIT" ]; then
+              PASSED="false"
+            fi
+          fi
+
+          echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
+          echo "grade=$GRADE" >> "$GITHUB_OUTPUT"
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          echo "Result: passed=$PASSED grade=$GRADE score=$SCORE"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-eval-results
+          path: |
+            audit_results.json
+            functional_results.json
+            trigger_results.json
+          if-no-files-found: ignore

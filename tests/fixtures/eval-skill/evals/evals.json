@@ -1,0 +1,37 @@
+[
+  {
+    "id": "csv-summary",
+    "prompt": "Read the file sample.csv and output a summary with the number of rows and the column names.",
+    "expected_output": "The CSV has 3 rows and columns: name, age, city",
+    "files": ["files/sample.csv"],
+    "assertions": [
+      "contains 'name'",
+      "contains 'age'",
+      "contains 'city'",
+      "has at least 1 lines"
+    ]
+  },
+  {
+    "id": "csv-row-count",
+    "prompt": "Count the number of data rows in sample.csv (excluding the header).",
+    "expected_output": "3",
+    "files": ["files/sample.csv"],
+    "assertions": [
+      "contains '3'",
+      "does not contain 'error'"
+    ]
+  },
+  {
+    "id": "csv-json-columns",
+    "prompt": "Read sample.csv and output ONLY a JSON object with a single key 'columns' whose value is an array of the column names. No explanation, just the JSON.",
+    "expected_output": "{\"columns\": [\"name\", \"age\", \"city\"]}",
+    "files": ["files/sample.csv"],
+    "assertions": [
+      "is valid JSON",
+      "starts with '{'",
+      "ends with '}'",
+      "matches regex /\"name\"/",
+      "contains 'columns'"
+    ]
+  }
+]

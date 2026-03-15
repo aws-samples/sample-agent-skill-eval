@@ -1,0 +1,21 @@
+date,product,region,revenue,units_sold
+2024-01-15,Widget Pro,North,4500,30
+2024-01-15,Gadget Plus,South,3800,25
+2024-01-15,Basic Widget,East,2200,45
+2024-01-22,Widget Pro,West,5200,35
+2024-01-22,Gadget Plus,North,4100,28
+2024-01-22,Basic Widget,South,1800,38
+2024-02-01,Widget Pro,East,4800,32
+2024-02-01,Gadget Plus,West,3600,22
+2024-02-01,Basic Widget,North,2100,42
+2024-02-15,Widget Pro,South,5500,37
+2024-02-15,Gadget Plus,East,3200,20
+2024-02-15,Basic Widget,West,1950,40
+2024-03-01,Widget Pro,North,6100,41
+2024-03-01,Gadget Plus,South,4500,30
+2024-03-01,Basic Widget,East,2400,48
+2024-03-15,Widget Pro,West,5800,39
+2024-03-15,Gadget Plus,North,4200,27
+2024-03-15,Basic Widget,South,2050,43
+2024-03-15,Widget Pro,East,15000,95
+2024-03-15,Gadget Plus,West,3900,26
