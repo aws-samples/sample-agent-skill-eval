@@ -12,7 +12,7 @@ Both paths use the built-in test fixtures so you can follow along without writin
 ## Prerequisites
 
 ```bash
-git clone https://github.com/melanie531/agent-skill-evaluation.git
+git clone https://github.com/aws-samples/sample-agent-skill-eval.git
 cd agent-skill-evaluation
 pip install -e .
 ```
@@ -111,7 +111,7 @@ on: [pull_request]
 
 jobs:
   evaluate:
-    uses: melanie531/agent-skill-evaluation/.github/workflows/skill-eval.yml@main
+    uses: aws-samples/sample-agent-skill-eval/.github/workflows/skill-eval.yml@main
     with:
       skill_path: "path/to/your-skill"
       fail_on_warning: true
@@ -128,7 +128,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install git+https://github.com/melanie531/agent-skill-evaluation.git
+      - run: pip install git+https://github.com/aws-samples/sample-agent-skill-eval.git
       - run: skill-eval audit ./my-skill --fail-on-warning
 ```
 
@@ -258,7 +258,7 @@ on: [pull_request]
 
 jobs:
   evaluate:
-    uses: melanie531/agent-skill-evaluation/.github/workflows/skill-eval.yml@main
+    uses: aws-samples/sample-agent-skill-eval/.github/workflows/skill-eval.yml@main
     with:
       skill_path: "."
       run_functional: true

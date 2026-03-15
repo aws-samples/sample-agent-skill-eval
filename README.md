@@ -124,7 +124,7 @@ Workflow: create with skill-creator -> evaluate with skill-eval -> iterate -> de
 # .github/workflows/skill-eval.yml
 jobs:
   evaluate:
-    uses: melanie531/agent-skill-evaluation/.github/workflows/skill-eval.yml@main
+    uses: aws-samples/sample-agent-skill-eval/.github/workflows/skill-eval.yml@main
     with:
       skill_path: "path/to/your-skill"
       run_functional: true
