@@ -142,6 +142,45 @@ skill-eval audit . --include-all
 
 ---
 
+## Configuration (`.skilleval.yaml`)
+
+Customize audit behavior per-skill or per-project by placing a `.skilleval.yaml` (or `.skilleval.yml`) in your skill directory or any parent directory.
+
+```yaml
+# .skilleval.yaml
+audit:
+  # Ignore specific finding codes
+  ignore:
+    - STR-008    # Directory name ≠ skill name is fine
+    - STR-017    # README alongside SKILL.md is intentional
+
+  # Override severity levels
+  severity_overrides:
+    SEC-002: WARNING    # Downgrade external URL to warning
+    STR-011: CRITICAL   # Upgrade short description to critical
+
+  # Whitelist internal domains (won't trigger SEC-002)
+  safe_domains:
+    - api.internal.company.com
+    - wiki.team.io
+
+  # Minimum passing score for CI (exit 1 if below)
+  min_score: 70
+
+  # Custom regex rules
+  custom_rules:
+    - code: CUSTOM-001
+      pattern: "TODO|FIXME|HACK"
+      severity: INFO
+      message: "Found TODO/FIXME/HACK comment"
+```
+
+CLI flags override config values: `--min-score 80` takes precedence over the YAML setting. Config and CLI `--ignore` / `--allowlist` values are merged.
+
+> **Note:** Requires `pyyaml` — install with `pip install -e ".[config]"` or `pip install pyyaml`. Without it, config files are silently skipped.
+
+---
+
 ## Examples
 
 | Example | What you'll learn |
@@ -195,10 +234,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and PR wo
 - [OWASP Top 10 for LLMs](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [ClawHub](https://clawhub.com) — Agent Skills marketplace
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+MIT-0
