@@ -95,7 +95,6 @@ Audited on 2026-03-15.
 | self-evolving-skill | 86 | 84 | B / B | 0 | 1 | 2-3 | STR-007 name format (uppercase) |
 | self-evolve | 90 | — | A | 0 | 1 | 0 | STR-011 description too short |
 | **evolver** | **80** | **0** | **B / F** | **0 / 5** | **1 / 6** | **5 / 17** | **⚠️ VirusTotal flagged** |
-| capability-evolver | 82 | — | B | 0 | 1 | 4 | Same author as evolver |
 
 ### 🔴 Case Study: `evolver` — Why `--include-all` Matters
 
