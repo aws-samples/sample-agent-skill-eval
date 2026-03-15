@@ -8,3 +8,4 @@ build/
 tmp/
 .clawhub/
 _meta.json
+uv.lock
