@@ -210,7 +210,9 @@ class ClaudeRunner(AgentRunner):
 
             event_type = event.get("type", "")
 
-            # Extract tool_use events
+            # --- Extract tool_use events ---
+
+            # Format 1: Anthropic raw API streaming
             if event_type == "content_block_start":
                 cb = event.get("content_block", {})
                 if cb.get("type") == "tool_use":
@@ -220,7 +222,23 @@ class ClaudeRunner(AgentRunner):
                         "id": cb.get("id", ""),
                     })
 
-            # Extract text content
+            # Format 2: Claude CLI stream-json
+            # {"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{...}}]}}
+            if event_type == "assistant":
+                msg = event.get("message", {})
+                for content_block in msg.get("content", []):
+                    if content_block.get("type") == "tool_use":
+                        tool_calls.append({
+                            "name": content_block.get("name", ""),
+                            "input": content_block.get("input", {}),
+                            "id": content_block.get("id", ""),
+                        })
+                    elif content_block.get("type") == "text":
+                        text_parts.append(content_block.get("text", ""))
+
+            # --- Extract text content ---
+
+            # Format 1: Anthropic raw API streaming
             if event_type == "content_block_delta":
                 delta = event.get("delta", {})
                 if delta.get("type") == "text_delta":

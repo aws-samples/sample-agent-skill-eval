@@ -312,6 +312,110 @@ class TestDetectSkillTriggerFromParsed:
         assert _detect_skill_trigger_from_parsed(parsed, Path("/tmp/eval-skill")) is True
 
 
+class TestBashTriggerDetection:
+    """Test Bash/CLI command trigger detection."""
+
+    def test_bash_with_skill_name_in_command(self):
+        """Bash command containing skill name should trigger."""
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "skill-eval audit /path/to/skill"}}],
+            "text": "",
+        }
+        # skill name is "skill-eval" which matches the Bash command
+        assert _detect_skill_trigger_from_parsed(parsed, Path("/tmp/skill-eval")) is True
+
+    def test_bash_with_script_name(self, tmp_path):
+        """Bash command running a skill's script should trigger."""
+        skill_dir = tmp_path / "weather-skill"
+        skill_dir.mkdir()
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir()
+        (scripts_dir / "weather.py").write_text("# weather script")
+
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "python3 scripts/weather.py --city NYC"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+    def test_bash_with_script_stem(self, tmp_path):
+        """Bash command referencing script name without extension should trigger."""
+        skill_dir = tmp_path / "data-analysis"
+        skill_dir.mkdir()
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir()
+        (scripts_dir / "analyze_csv.py").write_text("# analysis script")
+
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "python3 analyze_csv.py sales.csv"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+    def test_bash_scripts_path_reference(self, tmp_path):
+        """Bash command with scripts/ path should trigger."""
+        skill_dir = tmp_path / "my-skill"
+        skill_dir.mkdir()
+
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "python3 scripts/process.py input.txt"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+    def test_bash_unrelated_command_no_trigger(self):
+        """Bash command not related to skill should not trigger."""
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "echo hello world"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, Path("/tmp/eval-skill")) is False
+
+    def test_bash_with_skill_path_in_command(self, tmp_path):
+        """Bash command referencing skill's full path should trigger."""
+        skill_dir = tmp_path / "my-skill"
+        skill_dir.mkdir()
+
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": f"cat {skill_dir}/SKILL.md"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+    def test_bash_with_hyphenated_skill_name(self):
+        """Bash command with underscore variant of hyphenated skill name should trigger."""
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "python3 -m data_analysis --file test.csv"}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, Path("/tmp/data-analysis")) is True
+
+    def test_shell_tool_name(self):
+        """'Shell' tool name should also be checked."""
+        parsed = {
+            "tool_calls": [{"name": "Shell", "input": {"command": "skill-eval audit ."}}],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, Path("/tmp/skill-eval")) is True
+
+    def test_multiple_tool_calls_one_triggers(self, tmp_path):
+        """If any tool call triggers, result should be True."""
+        skill_dir = tmp_path / "my-skill"
+        skill_dir.mkdir()
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir()
+        (scripts_dir / "run.py").write_text("# run")
+
+        parsed = {
+            "tool_calls": [
+                {"name": "Bash", "input": {"command": "echo hello"}},
+                {"name": "Bash", "input": {"command": "python3 scripts/run.py input.txt"}},
+            ],
+            "text": "",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+
 class TestTriggerQueryResultTokenFields:
     """Test TriggerQueryResult token fields."""
 

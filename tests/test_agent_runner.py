@@ -211,6 +211,139 @@ class TestClaudeRunnerParseOutput:
         assert result["token_counts"]["cache_creation_input_tokens"] == 10
 
 
+class TestParseClaudeCLIFormat:
+    """Test parsing Claude CLI stream-json format (type: assistant/user)."""
+
+    def test_parse_cli_tool_use(self):
+        """Parse tool_use from Claude CLI assistant message."""
+        runner = ClaudeRunner()
+        raw = json.dumps({
+            "type": "assistant",
+            "message": {
+                "content": [
+                    {
+                        "type": "tool_use",
+                        "name": "Bash",
+                        "input": {"command": "ls -la", "description": "List files"},
+                        "id": "toolu_123",
+                    }
+                ],
+            },
+        })
+        result = runner.parse_output(raw)
+        assert len(result["tool_calls"]) == 1
+        assert result["tool_calls"][0]["name"] == "Bash"
+        assert result["tool_calls"][0]["input"]["command"] == "ls -la"
+
+    def test_parse_cli_text_content(self):
+        """Parse text from Claude CLI assistant message content blocks."""
+        runner = ClaudeRunner()
+        raw = json.dumps({
+            "type": "assistant",
+            "message": {
+                "content": [
+                    {"type": "text", "text": "Here are the results:"},
+                ],
+            },
+        })
+        result = runner.parse_output(raw)
+        assert "Here are the results:" in result["text"]
+
+    def test_parse_cli_mixed_content(self):
+        """Parse both tool_use and text from a single assistant message."""
+        runner = ClaudeRunner()
+        raw = "\n".join([
+            json.dumps({
+                "type": "assistant",
+                "message": {
+                    "content": [
+                        {"type": "text", "text": "Let me check: "},
+                        {
+                            "type": "tool_use",
+                            "name": "Read",
+                            "input": {"file_path": "SKILL.md"},
+                            "id": "toolu_456",
+                        },
+                    ],
+                },
+            }),
+            json.dumps({
+                "type": "assistant",
+                "message": {
+                    "content": [
+                        {"type": "text", "text": "The file contains..."},
+                    ],
+                },
+            }),
+        ])
+        result = runner.parse_output(raw)
+        assert len(result["tool_calls"]) == 1
+        assert result["tool_calls"][0]["name"] == "Read"
+        assert "Let me check:" in result["text"] or "The file contains" in result["text"]
+
+    def test_parse_cli_multiple_tool_calls(self):
+        """Parse multiple tool calls across assistant messages."""
+        runner = ClaudeRunner()
+        raw = "\n".join([
+            json.dumps({
+                "type": "assistant",
+                "message": {"content": [
+                    {"type": "tool_use", "name": "Read", "input": {"file_path": "SKILL.md"}, "id": "t1"},
+                ]},
+            }),
+            json.dumps({
+                "type": "user",
+                "message": {"content": [
+                    {"type": "tool_result", "content": "skill content", "tool_use_id": "t1"},
+                ]},
+            }),
+            json.dumps({
+                "type": "assistant",
+                "message": {"content": [
+                    {"type": "tool_use", "name": "Bash", "input": {"command": "skill-eval audit ."}, "id": "t2"},
+                ]},
+            }),
+        ])
+        result = runner.parse_output(raw)
+        assert len(result["tool_calls"]) == 2
+        assert result["tool_calls"][0]["name"] == "Read"
+        assert result["tool_calls"][1]["name"] == "Bash"
+
+    def test_parse_cli_result_with_tokens(self):
+        """Parse result event with token counts from Claude CLI."""
+        runner = ClaudeRunner()
+        raw = json.dumps({
+            "type": "result",
+            "result": "Here is the output",
+            "usage": {
+                "input_tokens": 50000,
+                "output_tokens": 500,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 0,
+            },
+        })
+        result = runner.parse_output(raw)
+        assert result["token_counts"]["input_tokens"] == 50000
+        assert result["token_counts"]["output_tokens"] == 500
+        assert "Here is the output" in result["text"]
+
+    def test_parse_both_formats_combined(self):
+        """Parser handles both API streaming and CLI format in same input."""
+        runner = ClaudeRunner()
+        raw = "\n".join([
+            # API streaming format
+            json.dumps({"type": "content_block_start", "content_block": {
+                "type": "tool_use", "name": "Read", "input": {}, "id": "api1",
+            }}),
+            # CLI format
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {"command": "echo hi"}, "id": "cli1"},
+            ]}}),
+        ])
+        result = runner.parse_output(raw)
+        assert len(result["tool_calls"]) == 2
+
+
 class TestClaudeRunnerReadSkillContent:
     """Test ClaudeRunner._read_skill_content()."""
 

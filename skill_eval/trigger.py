@@ -216,9 +216,22 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
     1. Read tool_use referencing SKILL.md
     2. Skill tool_use matching skill name
     3. Any reference to the skill path in tool calls
+    4. Bash/shell commands referencing skill scripts or CLI commands
     """
     skill_name = skill_path.name
     skill_md = "SKILL.md"
+
+    # Build a set of script names from the skill's scripts/ directory
+    scripts_dir = skill_path / "scripts"
+    script_names: set[str] = set()
+    if scripts_dir.is_dir():
+        for f in scripts_dir.iterdir():
+            if f.is_file():
+                script_names.add(f.name)          # e.g. "weather.py"
+                script_names.add(f.stem)           # e.g. "weather"
+    # Also add the skill name itself as a potential CLI command
+    script_names.add(skill_name)                   # e.g. "data-analysis"
+    script_names.add(skill_name.replace("-", "_"))  # e.g. "data_analysis"
 
     for tool_call in parsed.get("tool_calls", []):
         name = tool_call.get("name", "")
@@ -232,6 +245,17 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
         if name.lower() == "read":
             file_path = str(input_data.get("file_path", ""))
             if skill_md in file_path:
+                return True
+
+        # Check for Bash/shell commands referencing skill scripts or commands
+        if name.lower() in ("bash", "shell", "terminal"):
+            command = str(input_data.get("command", ""))
+            command_lower = command.lower()
+            for script in script_names:
+                if script.lower() in command_lower:
+                    return True
+            # Also check for scripts/ path references
+            if "scripts/" in command or str(skill_path) in command:
                 return True
 
         # Check for any tool referencing the skill path
