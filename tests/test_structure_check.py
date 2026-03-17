@@ -140,3 +140,109 @@ class TestCheckStructure:
         assert fm["name"] == "weather"
         critical = [f for f in findings if f.severity == Severity.CRITICAL]
         assert len(critical) == 0
+
+
+class TestBestPracticeChecks:
+    """Test Anthropic best practice checks (STR-018, STR-019, STR-020)."""
+
+    def _make_skill(self, tmp_path, name="test-skill", description="A test skill that does useful things for testing purposes."):
+        """Helper: create a minimal valid skill directory with given name/description."""
+        skill_dir = tmp_path / name
+        skill_dir.mkdir()
+        skill_md = skill_dir / "SKILL.md"
+        skill_md.write_text(f"---\nname: {name}\ndescription: \"{description}\"\n---\n\n# Test\n\nInstructions here.\n")
+        return skill_dir
+
+    # --- STR-018: Reserved words in name ---
+
+    def test_name_with_claude_reserved_word(self, tmp_path):
+        skill_dir = self._make_skill(tmp_path, name="claude-helper", description="Helps with code review and analysis tasks.")
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-018" in codes, "Should flag 'claude' in skill name"
+
+    def test_name_with_anthropic_reserved_word(self, tmp_path):
+        skill_dir = self._make_skill(tmp_path, name="anthropic-tools", description="Provides various analysis tools for development.")
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-018" in codes, "Should flag 'anthropic' in skill name"
+
+    def test_name_without_reserved_words(self, tmp_path):
+        skill_dir = self._make_skill(tmp_path, name="code-review", description="Reviews code for bugs, security issues, and best practices.")
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-018" not in codes, "Should not flag normal skill name"
+
+    # --- STR-019: XML tags in description ---
+
+    def test_description_with_xml_tags(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="xml-test",
+            description="Processes data <important>and generates reports</important>.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-019" in codes, "Should flag XML tags in description"
+
+    def test_description_with_html_tags(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="html-test",
+            description="<b>Analyzes</b> code for security vulnerabilities and best practices.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-019" in codes, "Should flag HTML tags in description"
+
+    def test_description_without_xml_tags(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="no-xml-test",
+            description="Analyzes code for security vulnerabilities and best practices.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-019" not in codes, "Should not flag clean description"
+
+    # --- STR-020: Third person description ---
+
+    def test_description_first_person(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="first-person-test",
+            description="I can help you process Excel files and generate reports.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-020" in codes, "Should flag first-person description"
+
+    def test_description_second_person(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="second-person-test",
+            description="You can use this to process Excel files and generate reports.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-020" in codes, "Should flag second-person description"
+
+    def test_description_third_person(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="third-person-test",
+            description="Processes Excel files and generates reports. Use when working with spreadsheet data.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-020" not in codes, "Should not flag third-person description"
+
+    def test_description_im_contraction(self, tmp_path):
+        skill_dir = self._make_skill(
+            tmp_path,
+            name="contraction-test",
+            description="I'm a helpful skill that processes data files and outputs summaries.",
+        )
+        findings, fm, _ = check_structure(skill_dir)
+        codes = [f.code for f in findings]
+        assert "STR-020" in codes, "Should flag I'm contraction"

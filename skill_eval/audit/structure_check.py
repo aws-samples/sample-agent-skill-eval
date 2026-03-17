@@ -3,7 +3,10 @@
 Checks:
 - SKILL.md exists and has valid YAML frontmatter
 - name field: required, 1-64 chars, lowercase+hyphens, matches directory name
+- name field: must not contain reserved words ('anthropic', 'claude')
 - description field: required, 1-1024 chars, non-empty
+- description field: must not contain XML tags
+- description field: should use third person (not first/second person)
 - Optional fields: license, compatibility (max 500 chars), metadata, allowed-tools
 - Directory structure conventions
 - Progressive disclosure (SKILL.md size, reference file sizes)
@@ -270,6 +273,22 @@ def check_structure(skill_path: str | Path) -> tuple[list[Finding], Optional[dic
                 fix=f"Either rename the directory to '{name}/' or change the name field to '{dir_name}'.",
             ))
 
+        # Check name does not contain reserved words (agentskills.io spec)
+        _RESERVED_WORDS = ["anthropic", "claude"]
+        for reserved in _RESERVED_WORDS:
+            if reserved in name:
+                findings.append(Finding(
+                    code="STR-018",
+                    severity=Severity.WARNING,
+                    category=Category.STRUCTURE,
+                    title=f"Name contains reserved word '{reserved}'",
+                    detail=f"The name '{name}' contains '{reserved}', which is reserved per the agentskills.io specification. "
+                           f"Names must not contain 'anthropic' or 'claude'.",
+                    file_path=str(skill_md),
+                    fix=f"Remove '{reserved}' from the skill name. Use a descriptive name for what the skill does instead.",
+                ))
+                break  # One finding is enough
+
     # --- Check 4: description field ---
     desc = frontmatter.get("description")
     if not desc:
@@ -304,6 +323,45 @@ def check_structure(skill_path: str | Path) -> tuple[list[Finding], Optional[dic
                 detail=f"The description '{desc}' is very short ({len(desc)} chars). It should describe what the skill does AND when to use it.",
                 file_path=str(skill_md),
                 fix="Include both what the skill does and specific trigger contexts/phrases.",
+            ))
+
+        # Check description does not contain XML tags (agentskills.io spec)
+        if re.search(r"<[a-zA-Z][^>]*>", desc):
+            findings.append(Finding(
+                code="STR-019",
+                severity=Severity.WARNING,
+                category=Category.STRUCTURE,
+                title="Description contains XML tags",
+                detail="The description field must not contain XML tags per the agentskills.io specification. "
+                       "XML tags in the description can interfere with system prompt injection.",
+                file_path=str(skill_md),
+                fix="Remove all XML/HTML tags from the description. Use plain text only.",
+            ))
+
+        # Check description uses third person (Anthropic best practice)
+        # Flag first-person ("I can", "I will", "I help") and second-person ("You can", "You will")
+        _FIRST_PERSON_RE = re.compile(
+            r"\b(I can|I will|I help|I am|I\'m|I process|I analyze|I generate|I create|I extract|I manage)\b",
+            re.IGNORECASE,
+        )
+        _SECOND_PERSON_RE = re.compile(
+            r"\b(You can|You will|You should|You may)\b",
+            re.IGNORECASE,
+        )
+        fp_match = _FIRST_PERSON_RE.search(desc)
+        sp_match = _SECOND_PERSON_RE.search(desc)
+        if fp_match or sp_match:
+            matched = fp_match.group(0) if fp_match else sp_match.group(0)
+            findings.append(Finding(
+                code="STR-020",
+                severity=Severity.INFO,
+                category=Category.STRUCTURE,
+                title="Description should use third person",
+                detail=f"Found '{matched}' in description. Per Anthropic best practices, descriptions should use "
+                       f"third person (e.g., 'Processes Excel files') instead of first person ('I can help') "
+                       f"or second person ('You can use this'). Inconsistent point-of-view can cause discovery problems.",
+                file_path=str(skill_md),
+                fix="Rewrite the description in third person: 'Analyzes data...' instead of 'I analyze data...'.",
             ))
 
     # --- Check 5: compatibility field ---
