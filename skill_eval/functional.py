@@ -235,33 +235,53 @@ def _execute_eval_pair(
     if runner is None:
         runner = get_runner("claude")
 
-    # Set up workspace with eval files
-    with tempfile.TemporaryDirectory(prefix="skill-eval-") as tmpdir:
-        workspace = Path(tmpdir)
+    # Set up separate workspaces for with-skill and without-skill runs.
+    # Using independent workspaces prevents contamination — without-skill
+    # should not see skill scripts/SKILL.md that were copied for with-skill.
+    with tempfile.TemporaryDirectory(prefix="skill-eval-with-") as with_tmpdir, \
+         tempfile.TemporaryDirectory(prefix="skill-eval-without-") as without_tmpdir:
+        with_workspace = Path(with_tmpdir)
+        without_workspace = Path(without_tmpdir)
 
-        # Copy any referenced files into workspace
-        for rel_file in eval_case.files:
-            src = evals_dir / rel_file
-            dst = workspace / Path(rel_file).name
-            if src.is_file():
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src, dst)
+        # Copy eval case files into both workspaces
+        for ws in (with_workspace, without_workspace):
+            for rel_file in eval_case.files:
+                src = evals_dir / rel_file
+                dst = ws / Path(rel_file).name
+                if src.is_file():
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+
+        # Copy skill resource directories into with-skill workspace only,
+        # so the agent can access scripts/, references/, and assets/ as
+        # described in SKILL.md.
+        if skill_path:
+            _skill = Path(skill_path)
+            for subdir in ("scripts", "references", "assets"):
+                src_dir = _skill / subdir
+                if src_dir.is_dir():
+                    dst_dir = with_workspace / subdir
+                    shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
+            # Also copy SKILL.md so the agent can read it if needed
+            _skill_md = _skill / "SKILL.md"
+            if _skill_md.is_file():
+                shutil.copy2(_skill_md, with_workspace / "SKILL.md")
 
         # Run WITH skill
         with_stdout, with_stderr, with_rc, with_elapsed = runner.run_prompt(
             eval_case.prompt,
             skill_path=str(skill_path),
-            workspace_dir=str(workspace),
+            workspace_dir=str(with_workspace),
             timeout=timeout,
             output_format="stream-json",
         )
         with_parsed = runner.parse_output(with_stdout)
 
-        # Run WITHOUT skill (fresh workspace)
+        # Run WITHOUT skill (clean workspace — no skill files)
         without_stdout, without_stderr, without_rc, without_elapsed = runner.run_prompt(
             eval_case.prompt,
             skill_path=None,
-            workspace_dir=str(workspace),
+            workspace_dir=str(without_workspace),
             timeout=timeout,
             output_format="stream-json",
         )

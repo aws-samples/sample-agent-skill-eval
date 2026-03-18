@@ -484,6 +484,46 @@ class TestExecuteEvalPair:
         assert first_kwargs.get("skill_path") is not None
         assert second_kwargs.get("skill_path") is None
 
+    def test_execute_eval_pair_copies_skill_resources_to_workspace(self):
+        """Skill scripts/ and references/ should be in with-skill workspace only."""
+        stream = _make_stream_json("name age")
+        runner = self._make_mock_runner()
+        captured_workspaces = []
+
+        def capture_run_prompt(prompt, **kwargs):
+            wd = kwargs.get("workspace_dir")
+            if wd:
+                from pathlib import Path as _P
+                workspace = _P(wd)
+                captured_workspaces.append({
+                    "skill_path": kwargs.get("skill_path"),
+                    "has_scripts": (workspace / "scripts").is_dir(),
+                    "has_skill_md": (workspace / "SKILL.md").is_file(),
+                })
+            return (stream, "", 0, 1.0)
+
+        runner.run_prompt.side_effect = capture_run_prompt
+
+        _execute_eval_pair(
+            self._eval_case(),
+            FIXTURES / "good-skill",
+            FIXTURES / "good-skill" / "evals",
+            run_index=0,
+            timeout=30,
+            runner=runner,
+        )
+        # with-skill workspace should have scripts/ and SKILL.md
+        assert len(captured_workspaces) == 2
+        with_skill_ws = captured_workspaces[0]
+        assert with_skill_ws["skill_path"] is not None
+        assert with_skill_ws["has_scripts"] is True
+        assert with_skill_ws["has_skill_md"] is True
+        # without-skill workspace should NOT have scripts/ or SKILL.md
+        without_skill_ws = captured_workspaces[1]
+        assert without_skill_ws["skill_path"] is None
+        assert without_skill_ws["has_scripts"] is False
+        assert without_skill_ws["has_skill_md"] is False
+
 
 class TestClassifyCostEfficiency:
     """Test Pareto cost-efficiency classification."""

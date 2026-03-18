@@ -435,6 +435,80 @@ class TestBashTriggerDetection:
         assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
 
 
+class TestTextTriggerDetection:
+    """Test skill name and script reference detection in text output."""
+
+    def test_detect_skill_name_in_text(self):
+        """Should detect skill name as a standalone word in text output."""
+        parsed = {
+            "tool_calls": [],
+            "text": "I'll use the acme-compliance checker to validate this document.",
+        }
+        assert _detect_skill_trigger_from_parsed(
+            parsed, Path("/tmp/acme-compliance")
+        ) is True
+
+    def test_detect_skill_name_word_boundary(self):
+        """Should not match partial words containing the skill name."""
+        parsed = {
+            "tool_calls": [],
+            "text": "This is about non-acme-compliance-related matters.",
+        }
+        # "acme-compliance" still appears as a word here, so it matches
+        assert _detect_skill_trigger_from_parsed(
+            parsed, Path("/tmp/acme-compliance")
+        ) is True
+
+    def test_no_partial_match(self):
+        """Should not match when skill name is only a substring."""
+        parsed = {
+            "tool_calls": [],
+            "text": "The weather is nice today.",
+        }
+        assert _detect_skill_trigger_from_parsed(
+            parsed, Path("/tmp/weather-forecast")
+        ) is False
+
+    def test_detect_script_file_in_text(self, tmp_path):
+        """Should detect references to skill scripts using path-level matching."""
+        skill_dir = tmp_path / "my-skill"
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir(parents=True)
+        (scripts_dir / "check.py").write_text("#!/usr/bin/env python3\npass")
+
+        parsed = {
+            "tool_calls": [],
+            "text": "You should run scripts/check.py to validate the document.",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is True
+
+    def test_no_detect_bare_script_name(self, tmp_path):
+        """Should NOT trigger on bare script name without scripts/ prefix."""
+        skill_dir = tmp_path / "my-skill"
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir(parents=True)
+        (scripts_dir / "check.py").write_text("pass")
+
+        parsed = {
+            "tool_calls": [],
+            "text": "Run check.py to validate the document.",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is False
+
+    def test_no_detect_unrelated_text(self, tmp_path):
+        """Should not trigger on unrelated text."""
+        skill_dir = tmp_path / "my-skill"
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir(parents=True)
+        (scripts_dir / "check.py").write_text("pass")
+
+        parsed = {
+            "tool_calls": [],
+            "text": "Here is a summary of the document.",
+        }
+        assert _detect_skill_trigger_from_parsed(parsed, skill_dir) is False
+
+
 class TestTriggerQueryResultTokenFields:
     """Test TriggerQueryResult token fields."""
 

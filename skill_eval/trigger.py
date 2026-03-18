@@ -298,8 +298,33 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
 
     # Also check text output for skill activation markers
     text = parsed.get("text", "")
-    if f"skill:{skill_name}" in text.lower() or f"using {skill_name}" in text.lower():
+    text_lower = text.lower()
+    skill_name_lower = skill_name.lower()
+
+    # Direct skill references
+    if f"skill:{skill_name_lower}" in text_lower or f"using {skill_name_lower}" in text_lower:
         return True
+
+    # When skill is injected via --append-system-prompt, the agent may
+    # reference the skill by name or mention its scripts/rules without
+    # explicitly "activating" it through a tool call.  Detect broader
+    # references to the skill name in the output text.
+    # Use word-boundary matching to avoid false positives on partial names.
+    import re as _re
+    # Match skill name as a standalone term (hyphenated names are common)
+    skill_word_pattern = _re.compile(
+        r'\b' + _re.escape(skill_name_lower) + r'\b',
+        _re.IGNORECASE,
+    )
+    if skill_word_pattern.search(text):
+        return True
+
+    # Also detect references to skill scripts in the text, using path-level
+    # matching (scripts/{filename}) to avoid false positives on common names
+    # like "check.py" or "main.py".
+    for script_file in script_files:
+        if f"scripts/{script_file.lower()}" in text_lower:
+            return True
 
     return False
 

@@ -140,10 +140,21 @@ class ClaudeRunner(AgentRunner):
         skill_content = self._read_skill_content(skill_path)
         cmd = [
             self.CLI_NAME, "-p", prompt,
-            "--allowedTools", "Read", "Glob", "Grep", "Bash", "Write", "Edit", "Skill",
+            "--allowedTools", "Read", "Glob", "Grep", "Bash", "Write", "Edit",
         ]
         if skill_content:
-            cmd.extend(["--append-system-prompt", skill_content])
+            # Append a workspace hint so the agent knows skill resources
+            # (scripts/, references/, assets/) are available in the working
+            # directory.  Without this, the agent may not attempt to execute
+            # scripts even though they've been copied to the workspace.
+            workspace_hint = (
+                "\n\n---\n"
+                "Note: The skill's scripts/, references/, and assets/ "
+                "directories are available in your current working directory. "
+                "You can execute scripts directly, e.g. "
+                "`python3 scripts/example.py`."
+            )
+            cmd.extend(["--append-system-prompt", skill_content + workspace_hint])
         return cmd
 
     def _build_cmd_without_skill(self, prompt: str) -> list[str]:

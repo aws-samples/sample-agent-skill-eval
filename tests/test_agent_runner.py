@@ -377,20 +377,24 @@ class TestClaudeRunnerBuildCmd:
         cmd = runner._build_cmd_with_skill("test prompt", str(skill_dir))
         assert "--append-system-prompt" in cmd
         assert "--plugin-dir" not in cmd
-        assert "skill content" in cmd
+        # The injected content should include a workspace hint
+        idx = cmd.index("--append-system-prompt")
+        injected = cmd[idx + 1]
+        assert "skill content" in injected
+        assert "scripts/" in injected
         assert "claude" == cmd[0]
         assert "-p" in cmd
         assert "test prompt" in cmd
 
-    def test_build_cmd_with_skill_includes_skill_tool(self, tmp_path):
-        """With-skill command should include the Skill tool."""
+    def test_build_cmd_with_skill_no_skill_tool(self, tmp_path):
+        """With-skill command should NOT include the Skill tool (system prompt injection)."""
         runner = ClaudeRunner()
         skill_dir = tmp_path / "skill"
         skill_dir.mkdir()
         (skill_dir / "SKILL.md").write_text("content")
 
         cmd = runner._build_cmd_with_skill("prompt", str(skill_dir))
-        assert "Skill" in cmd
+        assert "Skill" not in cmd
 
     def test_build_cmd_without_skill(self):
         """_build_cmd_without_skill should not include --append-system-prompt or Skill."""
