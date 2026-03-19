@@ -405,6 +405,7 @@ class TestClaudeRunnerBuildCmd:
         assert "claude" == cmd[0]
         assert "-p" in cmd
         assert "test prompt" in cmd
+        assert "--dangerously-skip-permissions" in cmd
         assert "--allowedTools" in cmd
 
     def test_build_cmd_with_skill_no_skill_md(self, tmp_path):

@@ -140,6 +140,7 @@ class ClaudeRunner(AgentRunner):
         skill_content = self._read_skill_content(skill_path)
         cmd = [
             self.CLI_NAME, "-p", prompt,
+            "--dangerously-skip-permissions",
             "--allowedTools", "Read", "Glob", "Grep", "Bash", "Write", "Edit",
         ]
         if skill_content:
@@ -161,6 +162,7 @@ class ClaudeRunner(AgentRunner):
         """Build claude CLI argument list for running WITHOUT a skill."""
         return [
             self.CLI_NAME, "-p", prompt,
+            "--dangerously-skip-permissions",
             "--allowedTools", "Read", "Glob", "Grep", "Bash", "Write", "Edit",
         ]
 
