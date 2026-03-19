@@ -176,7 +176,15 @@ def _run_trigger_query(
         )
         if rc == 0 and stdout.strip():
             parsed = runner.parse_output(stdout)
-            triggered = _detect_skill_trigger_from_parsed(parsed, skill_path)
+            signal = _classify_trigger_signal(parsed, skill_path)
+            # For should_trigger=false queries, only count strong (tool-based)
+            # signals as triggers.  Text-only mentions are too noisy for
+            # negative queries — an agent may casually mention a skill name
+            # (e.g. "text-summary", "compliance") without intending to use it.
+            if query.should_trigger:
+                triggered = signal != "none"
+            else:
+                triggered = signal == "tool"
             if triggered:
                 trigger_count += 1
             tc = parsed["token_counts"]
@@ -213,11 +221,30 @@ def _run_trigger_query(
 def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
     """Detect whether the skill was activated from pre-parsed stream data.
 
+    Returns True if a tool-based signal (strong) or a text-based signal
+    (weak) is found.  Use ``_classify_trigger_signal`` when you need to
+    distinguish the two.
+
     Looks for:
     1. Read tool_use referencing SKILL.md
     2. Skill tool_use matching skill name
     3. Bash/shell commands that *execute* skill scripts (not just reference paths)
     4. Any tool explicitly invoking the skill by name
+    5. (Weak) Skill name mentioned in text output
+    """
+    signal = _classify_trigger_signal(parsed, skill_path)
+    return signal != "none"
+
+
+def _classify_trigger_signal(parsed: dict, skill_path: Path) -> str:
+    """Classify the strength of a trigger signal.
+
+    Returns:
+        "tool"  — strong signal: agent used a tool to activate the skill
+                  (Read SKILL.md, Bash script execution, Skill tool, etc.)
+        "text"  — weak signal: agent mentioned the skill name in its text
+                  output without an explicit tool invocation
+        "none"  — no trigger detected
     """
     skill_name = skill_path.name
     skill_md = "SKILL.md"
@@ -246,13 +273,13 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
 
         # Check for Skill tool invocation
         if name.lower() == "skill":
-            return True
+            return "tool"
 
         # Check for Read of SKILL.md
         if name.lower() == "read":
             file_path = str(input_data.get("file_path", ""))
             if skill_md in file_path:
-                return True
+                return "tool"
 
         # Check for Bash/shell commands executing skill scripts
         if name.lower() in ("bash", "shell", "terminal"):
@@ -267,10 +294,10 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
                     # Verify it looks like execution, not just ls/cat of a directory
                     for prefix in _EXEC_PREFIXES:
                         if prefix in command_lower:
-                            return True
+                            return "tool"
                     # Also match direct script execution: "./scripts/weather.py"
                     if f"scripts/{script_file.lower()}" in command_lower:
-                        return True
+                        return "tool"
 
             # Check 2: Command uses the skill name as a CLI command
             # e.g. "skill-eval audit ." — skill_name is the first token or after pipe
@@ -280,7 +307,7 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
                 _re.IGNORECASE,
             )
             if skill_cmd_pattern.search(command):
-                return True
+                return "tool"
 
             # Check 3: Command uses underscore variant as a module
             # e.g. "python3 -m data_analysis --file test.csv"
@@ -290,20 +317,20 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
                 _re.IGNORECASE,
             )
             if module_pattern.search(command):
-                return True
+                return "tool"
 
             # Check 4: Full skill path explicitly in command
             if str(skill_path) in command:
-                return True
+                return "tool"
 
-    # Also check text output for skill activation markers
+    # --- Text-based detection (weak signal) ---
     text = parsed.get("text", "")
     text_lower = text.lower()
     skill_name_lower = skill_name.lower()
 
-    # Direct skill references
+    # Direct skill references — intentional activation phrases
     if f"skill:{skill_name_lower}" in text_lower or f"using {skill_name_lower}" in text_lower:
-        return True
+        return "text"
 
     # When skill is injected via --append-system-prompt, the agent may
     # reference the skill by name or mention its scripts/rules without
@@ -317,16 +344,16 @@ def _detect_skill_trigger_from_parsed(parsed: dict, skill_path: Path) -> bool:
         _re.IGNORECASE,
     )
     if skill_word_pattern.search(text):
-        return True
+        return "text"
 
     # Also detect references to skill scripts in the text, using path-level
     # matching (scripts/{filename}) to avoid false positives on common names
     # like "check.py" or "main.py".
     for script_file in script_files:
         if f"scripts/{script_file.lower()}" in text_lower:
-            return True
+            return "text"
 
-    return False
+    return "none"
 
 
 def _detect_skill_trigger(stream_output: str, skill_path: Path, runner: Optional[AgentRunner] = None) -> bool:

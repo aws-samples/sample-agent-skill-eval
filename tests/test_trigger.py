@@ -12,6 +12,7 @@ from skill_eval.trigger import (
     _read_skill_name,
     _detect_skill_trigger,
     _detect_skill_trigger_from_parsed,
+    _classify_trigger_signal,
     _run_trigger_query,
     _build_trigger_report,
     _print_trigger_report,
@@ -274,6 +275,120 @@ class TestReadSkillName:
     def test_read_missing(self, tmp_path):
         name = _read_skill_name(tmp_path)
         assert name is None
+
+
+class TestClassifyTriggerSignal:
+    """Test _classify_trigger_signal returns correct signal strength."""
+
+    def test_tool_signal_from_skill_tool(self):
+        parsed = {"tool_calls": [{"name": "Skill", "input": {}}], "text": ""}
+        assert _classify_trigger_signal(parsed, Path("/tmp/eval-skill")) == "tool"
+
+    def test_tool_signal_from_read_skill_md(self):
+        parsed = {
+            "tool_calls": [{"name": "Read", "input": {"file_path": "/tmp/eval-skill/SKILL.md"}}],
+            "text": "",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/eval-skill")) == "tool"
+
+    def test_tool_signal_from_bash_execution(self):
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "eval-skill --audit ."}}],
+            "text": "",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/eval-skill")) == "tool"
+
+    def test_text_signal_from_name_mention(self):
+        parsed = {
+            "tool_calls": [],
+            "text": "I'll use the acme-compliance checker to validate this document.",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/acme-compliance")) == "text"
+
+    def test_text_signal_from_using_prefix(self):
+        parsed = {
+            "tool_calls": [],
+            "text": "Using text-summary to condense the article.",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/text-summary")) == "text"
+
+    def test_none_signal_when_unrelated(self):
+        parsed = {
+            "tool_calls": [{"name": "Bash", "input": {"command": "echo hello"}}],
+            "text": "The weather is nice today.",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/text-summary")) == "none"
+
+    def test_tool_signal_takes_priority_over_text(self):
+        """When both tool and text signals exist, tool should be returned."""
+        parsed = {
+            "tool_calls": [{"name": "Read", "input": {"file_path": "/tmp/text-summary/SKILL.md"}}],
+            "text": "Using text-summary for the task.",
+        }
+        assert _classify_trigger_signal(parsed, Path("/tmp/text-summary")) == "tool"
+
+    def test_text_signal_from_script_reference(self, tmp_path):
+        """Script path references in text are weak signals."""
+        skill_dir = tmp_path / "my-skill"
+        scripts_dir = skill_dir / "scripts"
+        scripts_dir.mkdir(parents=True)
+        (scripts_dir / "check.py").write_text("pass")
+
+        parsed = {
+            "tool_calls": [],
+            "text": "You should run scripts/check.py to validate.",
+        }
+        assert _classify_trigger_signal(parsed, skill_dir) == "text"
+
+
+class TestAsymmetricTriggerDetection:
+    """Test that should_trigger=false queries only count tool signals."""
+
+    def _make_mock_runner(self):
+        runner = MagicMock(spec=ClaudeRunner)
+        runner.parse_output.side_effect = ClaudeRunner().parse_output
+        return runner
+
+    def test_text_only_signal_ignored_for_negative_query(self):
+        """should_trigger=false + text-only mention → NOT triggered (no false positive)."""
+        # Agent mentions "text-summary" casually but doesn't use any tool
+        stream = _make_trigger_stream(tool_name=None, text="I could use text-summary here but it's not needed.",
+                                       input_tokens=100, output_tokens=50)
+        runner = self._make_mock_runner()
+        runner.run_prompt.return_value = (stream, "", 0, 1.0)
+
+        query = TriggerQuery(query="What is the capital of France?", should_trigger=False)
+        result = _run_trigger_query(query, Path("/tmp/text-summary"), runs=1, timeout=30, runner=runner)
+        assert result.trigger_count == 0
+        assert result.passed is True  # Correctly not triggered
+
+    def test_tool_signal_still_counts_for_negative_query(self):
+        """should_trigger=false + tool signal → triggered (correct detection)."""
+        runner = MagicMock(spec=ClaudeRunner)
+        # Return a parsed dict with a tool call that reads SKILL.md
+        runner.parse_output.return_value = {
+            "tool_calls": [{"name": "Read", "input": {"file_path": "/tmp/text-summary/SKILL.md"}}],
+            "text": "",
+            "token_counts": {"input_tokens": 100, "output_tokens": 50},
+        }
+        runner.run_prompt.return_value = ("fake-stream", "", 0, 1.0)
+
+        query = TriggerQuery(query="What is the capital of France?", should_trigger=False)
+        result = _run_trigger_query(query, Path("/tmp/text-summary"), runs=1, timeout=30, runner=runner)
+        assert result.trigger_count == 1
+        assert result.passed is False  # Correctly flagged: skill triggered when it shouldn't
+
+    def test_text_signal_counts_for_positive_query(self):
+        """should_trigger=true + text mention → triggered (text signals count for positive)."""
+        stream = _make_trigger_stream(tool_name=None, text="Using text-summary to condense the article.",
+                                       input_tokens=100, output_tokens=50)
+        runner = self._make_mock_runner()
+        runner.run_prompt.return_value = (stream, "", 0, 1.0)
+
+        query = TriggerQuery(query="Summarize this article for me", should_trigger=True)
+        result = _run_trigger_query(query, Path("/tmp/text-summary"), runs=1, timeout=30, runner=runner)
+        assert result.trigger_count == 1
+        assert result.passed is True
 
 
 class TestDetectSkillTriggerFromParsed:
