@@ -266,6 +266,14 @@ def _execute_eval_pair(
             _skill_md = _skill / "SKILL.md"
             if _skill_md.is_file():
                 shutil.copy2(_skill_md, with_workspace / "SKILL.md")
+            # Copy .claude/ settings directory so the agent inherits
+            # project-level configuration (e.g., AWS profile, MCP servers,
+            # permission settings) when running from the temp workspace.
+            _claude_dir = _skill / ".claude"
+            if _claude_dir.is_dir():
+                shutil.copytree(
+                    _claude_dir, with_workspace / ".claude", dirs_exist_ok=True
+                )
 
         # Run WITH skill
         with_stdout, with_stderr, with_rc, with_elapsed = runner.run_prompt(
