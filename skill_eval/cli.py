@@ -6,6 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from skill_eval.logging_config import configure_logging
+
 from skill_eval.schemas import AuditReport, Finding, calculate_score, calculate_grade
 from skill_eval.audit.structure_check import check_structure
 from skill_eval.audit.security_scan import scan_security, SAFE_DOMAINS
@@ -110,6 +112,11 @@ def main(argv: list[str] | None = None) -> int:
         prog="skill-eval",
         description="Agent Skill Security & Quality Evaluation",
     )
+    # Global flags
+    parser.add_argument("--debug", action="store_true",
+                        help="Emit debug logs to stderr")
+    parser.add_argument("--debug-log", type=str, default=None, metavar="FILE",
+                        help="Write debug logs to FILE")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # audit command
@@ -249,6 +256,9 @@ def main(argv: list[str] | None = None) -> int:
                                   help="Output format (default: text)")
 
     args = parser.parse_args(argv)
+
+    # Configure logging before dispatching to any subcommand
+    configure_logging(debug=args.debug, debug_log=args.debug_log)
 
     if not args.command:
         parser.print_help()

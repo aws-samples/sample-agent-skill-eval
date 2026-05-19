@@ -11,11 +11,14 @@ from __future__ import annotations
 
 import abc
 import json
+import logging
 import shutil
 import subprocess
 import time
 from pathlib import Path
 from typing import Optional
+
+LOG = logging.getLogger("skill_eval.agent_runner")
 
 
 # ---------------------------------------------------------------------------
@@ -183,6 +186,9 @@ class ClaudeRunner(AgentRunner):
         if output_format == "stream-json":
             cmd.extend(["--output-format", "stream-json", "--verbose"])
 
+        LOG.debug("Claude command: %s", " ".join(cmd))
+        LOG.debug("Working directory: %s", workspace_dir or "(inherited)")
+
         start = time.monotonic()
         try:
             result = subprocess.run(
@@ -193,12 +199,18 @@ class ClaudeRunner(AgentRunner):
                 cwd=workspace_dir,
             )
             elapsed = time.monotonic() - start
+            LOG.debug("Claude exited with code %d in %.1fs", result.returncode, elapsed)
+            LOG.debug("Claude stdout: %s", result.stdout[:5000])
+            if result.stderr:
+                LOG.debug("Claude stderr: %s", result.stderr[:2000])
             return result.stdout, result.stderr, result.returncode, elapsed
         except subprocess.TimeoutExpired:
             elapsed = time.monotonic() - start
+            LOG.debug("Claude timed out after %ds", timeout)
             return "", f"Timed out after {timeout}s", -1, elapsed
         except FileNotFoundError:
             elapsed = time.monotonic() - start
+            LOG.debug("Claude CLI not found on PATH")
             return "", "claude CLI not found", -1, elapsed
 
     def parse_output(self, raw: str) -> dict:

@@ -8,6 +8,7 @@ and produces a benchmark.json report.
 from __future__ import annotations
 
 import json
+import logging
 import math
 import shutil
 import sys
@@ -22,6 +23,8 @@ from skill_eval.eval_schemas import (
 )
 from skill_eval.agent_runner import AgentRunner, AgentNotAvailableError, get_runner
 from skill_eval.grading import grade_output
+
+LOG = logging.getLogger("skill_eval.functional")
 
 
 # ---------------------------------------------------------------------------
@@ -54,6 +57,9 @@ def run_functional_eval(
         Exit code: 0 = passed, 1 = failed, 2 = error.
     """
     path = Path(skill_path).resolve()
+
+    LOG.debug("Starting functional eval for skill: %s", path)
+    LOG.debug("Runs per eval: %d, timeout: %ds, agent: %s", runs_per_eval, timeout, agent)
 
     # Load evals
     evals_file = Path(evals_path) if evals_path else path / "evals" / "evals.json"
@@ -243,6 +249,9 @@ def _execute_eval_pair(
         with_workspace = Path(with_tmpdir)
         without_workspace = Path(without_tmpdir)
 
+        LOG.debug("With-skill workspace: %s", with_workspace)
+        LOG.debug("Without-skill workspace: %s", without_workspace)
+
         # Copy eval case files into both workspaces
         for ws in (with_workspace, without_workspace):
             for rel_file in eval_case.files:
@@ -251,6 +260,7 @@ def _execute_eval_pair(
                 if src.is_file():
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)
+                    LOG.debug("Copied eval file %s -> %s", src, dst)
 
         # Copy skill resource directories into with-skill workspace only,
         # so the agent can access scripts/, references/, and assets/ as
@@ -262,10 +272,12 @@ def _execute_eval_pair(
                 if src_dir.is_dir():
                     dst_dir = with_workspace / subdir
                     shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
+                    LOG.debug("Copied skill dir %s -> %s", src_dir, dst_dir)
             # Also copy SKILL.md so the agent can read it if needed
             _skill_md = _skill / "SKILL.md"
             if _skill_md.is_file():
                 shutil.copy2(_skill_md, with_workspace / "SKILL.md")
+                LOG.debug("Copied SKILL.md to workspace")
             # Copy .claude/ settings directory so the agent inherits
             # project-level configuration (e.g., AWS profile, MCP servers,
             # permission settings) when running from the temp workspace.
@@ -274,6 +286,7 @@ def _execute_eval_pair(
                 shutil.copytree(
                     _claude_dir, with_workspace / ".claude", dirs_exist_ok=True
                 )
+                LOG.debug("Copied .claude/ settings to workspace")
 
         # Run WITH skill
         with_stdout, with_stderr, with_rc, with_elapsed = runner.run_prompt(

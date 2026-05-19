@@ -7,6 +7,7 @@ for a set of queries, measuring trigger precision and recall.
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
@@ -14,6 +15,8 @@ from typing import Optional
 from skill_eval.cost import estimate_trigger_cost, format_cost
 from skill_eval.eval_schemas import TriggerQuery, TriggerQueryResult, TriggerReport
 from skill_eval.agent_runner import AgentRunner, AgentNotAvailableError, get_runner
+
+LOG = logging.getLogger("skill_eval.trigger")
 
 
 # ---------------------------------------------------------------------------
@@ -46,6 +49,9 @@ def run_trigger_eval(
         Exit code: 0 = all passed, 1 = some failed, 2 = error.
     """
     path = Path(skill_path).resolve()
+
+    LOG.debug("Starting trigger eval for skill: %s", path)
+    LOG.debug("Runs per query: %d, timeout: %ds, agent: %s", runs_per_query, timeout, agent)
 
     # Load queries
     queries_file = Path(queries_path) if queries_path else path / "evals" / "eval_queries.json"
@@ -163,6 +169,8 @@ def _run_trigger_query(
     if runner is None:
         runner = get_runner("claude")
 
+    LOG.debug("Running trigger query (%d runs): %s", runs, query.query[:100])
+
     trigger_count = 0
     all_input_tokens: list[int] = []
     all_output_tokens: list[int] = []
@@ -177,6 +185,17 @@ def _run_trigger_query(
         if rc == 0 and stdout.strip():
             parsed = runner.parse_output(stdout)
             signal = _classify_trigger_signal(parsed, skill_path)
+            LOG.debug(
+                "Query: %s | signal=%s | tool_calls=%d | text_preview=%s",
+                query.query[:60],
+                signal,
+                len(parsed.get("tool_calls", [])),
+                parsed.get("text", "")[:200],
+            )
+            LOG.debug("Tool calls: %s", [
+                {"name": tc.get("name"), "input": tc.get("input", {})}
+                for tc in parsed.get("tool_calls", [])
+            ])
             # For should_trigger=false queries, only count strong (tool-based)
             # signals as triggers.  Text-only mentions are too noisy for
             # negative queries — an agent may casually mention a skill name
@@ -190,6 +209,8 @@ def _run_trigger_query(
             tc = parsed["token_counts"]
             all_input_tokens.append(tc.get("input_tokens", 0))
             all_output_tokens.append(tc.get("output_tokens", 0))
+        else:
+            LOG.debug("Claude returned rc=%d, stdout empty=%s", rc, not stdout.strip())
 
     trigger_rate = trigger_count / runs if runs > 0 else 0.0
 
