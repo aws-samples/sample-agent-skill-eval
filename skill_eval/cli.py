@@ -220,6 +220,10 @@ def main(argv: list[str] | None = None) -> int:
                                 help="Agent runner to use (default: claude)")
     report_parser.add_argument("--include-all", action="store_true",
                                 help="Audit scans entire directory tree instead of just skill-standard directories")
+    report_parser.add_argument("--runs-functional", type=int, default=1,
+                                help="Number of runs per functional eval case (default: 1)")
+    report_parser.add_argument("--runs-trigger", type=int, default=3,
+                                help="Number of runs per trigger query (default: 3)")
 
     # compare command
     compare_parser = subparsers.add_parser("compare",
@@ -386,6 +390,8 @@ def main(argv: list[str] | None = None) -> int:
             timeout=args.timeout,
             agent=args.agent,
             include_all=args.include_all,
+            runs_functional=args.runs_functional,
+            runs_trigger=args.runs_trigger,
         )
 
     elif args.command == "compare":
