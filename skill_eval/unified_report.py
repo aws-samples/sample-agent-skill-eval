@@ -81,6 +81,8 @@ def run_unified_report(
     timeout: int = 120,
     agent: str = "claude",
     include_all: bool = False,
+    runs_functional: int = 1,
+    runs_trigger: int = 3,
 ) -> int:
     """Run all applicable evaluations and produce a unified report.
 
@@ -95,6 +97,8 @@ def run_unified_report(
         timeout: Timeout per agent invocation in seconds.
         agent: Name of the registered agent runner.
         include_all: If True, audit scans entire directory tree.
+        runs_functional: Number of runs per functional eval case.
+        runs_trigger: Number of runs per trigger query.
 
     Returns:
         Exit code: 0 = passed, 1 = failed, 2 = error.
@@ -132,7 +136,7 @@ def run_unified_report(
     evals_file = path / "evals" / "evals.json"
     if include_functional and evals_file.is_file():
         try:
-            func_result = _run_functional(str(path), dry_run, timeout, agent)
+            func_result = _run_functional(str(path), dry_run, timeout, agent, runs_functional)
             if func_result is not None:
                 functional_norm = func_result["overall"]
                 func_section = {
@@ -158,7 +162,7 @@ def run_unified_report(
     queries_file = path / "evals" / "eval_queries.json"
     if include_trigger and queries_file.is_file():
         try:
-            trigger_result = _run_trigger(str(path), dry_run, timeout, agent)
+            trigger_result = _run_trigger(str(path), dry_run, timeout, agent, runs_trigger)
             if trigger_result is not None:
                 trigger_norm = trigger_result["pass_rate"]
                 sections["trigger"] = {
@@ -241,6 +245,7 @@ def _run_functional(
     dry_run: bool,
     timeout: int,
     agent: str,
+    runs_per_eval: int = 1,
 ) -> Optional[dict]:
     """Run functional eval and return summary dict, or None on error."""
     from skill_eval.functional import run_functional_eval
@@ -255,6 +260,7 @@ def _run_functional(
         agent=agent,
         output_path=str(out_file),
         format="json",
+        runs_per_eval=runs_per_eval,
     )
 
     if dry_run:
@@ -282,6 +288,7 @@ def _run_trigger(
     dry_run: bool,
     timeout: int,
     agent: str,
+    runs_per_query: int = 3,
 ) -> Optional[dict]:
     """Run trigger eval and return summary dict, or None on error."""
     from skill_eval.trigger import run_trigger_eval
@@ -296,6 +303,7 @@ def _run_trigger(
         agent=agent,
         output_path=str(out_file),
         format="json",
+        runs_per_query=runs_per_query,
     )
 
     if dry_run:
